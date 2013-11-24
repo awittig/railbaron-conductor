@@ -1,0 +1,135 @@
+
+p {color:green;}
+
+select {
+	height:30px;
+}
+
+div.playerTemplate {
+	display:none;
+}
+body {
+	width: 1750px;
+}
+div.player {
+	width:250px;
+	/*height:100%;*/
+	padding: 5px 10px;
+	margin:4px;
+	background-color: #fff;
+	float: left;
+	overflow:auto;
+	border-left: 2px solid #fff;
+	/*border-top: 2px solid #fff;*/
+	box-shadow: 1px 1px 4px #888;
+}
+.playerName {
+	width:225px;
+	font-size:24px;
+	background-color:inherit;
+	border:none;
+	color:#666;
+}
+
+.player.red {
+	border-color:#F26C4F;
+}
+.player.green {
+	border-color:#3BB878;
+}
+.player.blue {
+	border-color:#00BFF3;
+}
+.player.black {
+	border-color:#363636;
+}
+.player.white {
+	border-color:#eee;
+}
+.player.yellow {
+	border-color:#fff467;
+}
+.player.red:hover {
+	background-color: #fff2f2;
+}
+.player.green:hover {
+	background-color: #f2fff8;
+}
+.player.blue:hover {
+	background-color: #f2f3ff;
+}
+.player.black:hover {
+	background-color: #f0f0f0;
+}
+.player.white:hover {
+	background-color: #fafafa;
+}
+.player.yellow:hover {
+	background-color: #fffff2;
+}
+.red {
+	background-color:#F26C4F; 
+}
+.black {
+	background-color:#363636;
+}
+.green{
+	background-color:#3bb878;
+}
+.blue {
+	background-color:#00bff3; 
+}
+.white{
+	background-color:#eee; 
+}
+.yellow {
+	background-color:#fff467;
+}
+
+div.trip {
+	text-align:center;
+}
+.destinations {
+	width:100%
+	}
+p.payout {
+	display:inline;
+	width:100%;
+}
+.addDestination {
+	height:30px;
+	width: 100%;
+	margin:10px auto;
+}
+.button {
+	display:block;
+	color:#ccc;
+	font-size:36px;
+	line-height:36px;
+	text-align:center;
+}
+.button:hover {
+	cursor:pointer;
+	color:#111;
+}
+
+#addPlayer {
+	margin:4px;
+	width:40px;
+	height:80px;
+	float:left;
+}
+
+.playerColor {
+	width: 18px;
+	height: 18px; 
+	display:inline-block;
+	
+}
+.playerColor:hover{
+	cursor:pointer;
+}
+.playerColor div{
+	height: 18px;
+	display: none;
+}
