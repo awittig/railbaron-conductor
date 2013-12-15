@@ -1,5 +1,4 @@
 
-p {color:green;}
 
 select {
 	height:30px;
@@ -47,7 +46,7 @@ div.player {
 	border-color:#eee;
 }
 .player.yellow {
-	border-color:#fff467;
+	border-color:#ffed00;
 }
 .player.red:hover {
 	background-color: #fff2f2;
@@ -65,7 +64,7 @@ div.player {
 	background-color: #fafafa;
 }
 .player.yellow:hover {
-	background-color: #fffff2;
+	background-color: #FFF9B3;
 }
 .red {
 	background-color:#F26C4F; 
@@ -83,18 +82,27 @@ div.player {
 	background-color:#eee; 
 }
 .yellow {
-	background-color:#fff467;
+	background-color:#ffed00;
 }
-
+	
 div.trip {
 	text-align:center;
 }
+.trip:hover {
+	/*border:1px dashed black;*/
+}
 .destinations {
 	width:100%
-	}
-p.payout {
-	display:inline;
-	width:100%;
+}
+
+div.payout {
+	font-family: Helvetica, Calibri, Arial, sans-serif;
+	font-size:1.2em;
+	margin:5px;
+	cursor:pointer;
+}
+.unreachable {
+	color:red;
 }
 .addDestination {
 	height:30px;

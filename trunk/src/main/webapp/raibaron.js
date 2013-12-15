@@ -41,6 +41,15 @@ $(document).ready(function() {
 			playerParent.addClass(classToAdd);
 		};
 	});
+	$("body").on("change", ".destinations", function() {
+		var changedCityId = $(this).children(":selected").val();
+		var cityId1 = $(this).parent(".trip").next().find("option:selected").val();
+		var cityId2 = $(this).parent(".trip").prev().find("option:selected").val();
+		
+		getPayout(changedCityId, cityId1, $(this).parent(".trip").next().find(".payout"));
+		getPayout(changedCityId, cityId2, $(this).parent(".trip").find(".payout"));
+		
+	});
 	
 /*	var jsonExample = {
 		destinations: [{id:1, name:"Albany"},
@@ -50,6 +59,26 @@ $(document).ready(function() {
 		something: 123
 	};
 */	
+	$("body").on("hover", ".payout", function() {
+		$(this).next(".destinations").css("font-weight", "bold");
+	});
+	$("body").on("click", ".payout", function(){
+		$(this).toggleClass("unreachable");
+	});
+	
 	$("#addPlayer").click().click();
 });
 
+var getPayout = function(cityId1, cityId2, target) {
+	$.ajax({
+		url: "getPayout.do",
+		dataType: "json",
+		data: {from: cityId1, to: cityId2}
+	}).done(function(data){
+		target.html(format(data));
+	});
+};
+
+var format = function(x) {
+    return '$' + x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+};
