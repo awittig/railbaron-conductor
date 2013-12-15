@@ -18,16 +18,18 @@
 			<div class="white"></div>
 			<div class="yellow"></div>
 		</div>
-			<input type="text" class="playerName"  placeholder="Player's Name"/>
-			<div class="addDestination button">+</div>
-			<div class="trip">
-				<p class="payout">USE JAVASCRIPT TO FILL</p>
-				<select class="destinations" >
-				</select>
-			</div>
+		<input type="text" class="playerName"  placeholder="Player's Name"/>
+		<div class="addDestination button">+</div>
+		<div class="trip">
+			<div class="payout" title="click if player needs to pay another to complete">&nbsp;</div>
+			<select class="destinations">
+				<option>Choose a city...</option>
+			</select>
+		</div>
 	</div>	
 	<div class="allPlayers">
 	</div>
 	<div id="addPlayer" class="button">+</div>
+	
 </body>
 </html>
