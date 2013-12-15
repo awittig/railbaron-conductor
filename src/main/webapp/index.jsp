@@ -29,7 +29,20 @@
 	</div>	
 	<div class="allPlayers">
 	</div>
-	<div id="addPlayer" class="button">+</div>
+	<div id="controls">
+		<div id="addPlayer" class="button">+</div>
+		<div id="statsButton" class="button">#</div>
+	</div>
+	<div id="modalBackground"></div>
+	<div id="statsReadOut" >
+		<table id="playerStatsTemplate">
+			<tr><td>Name</td><td>Hometown</td><td>Trips</td><td>Unreachable</td><!-- <td>Income</td> --></tr>
+		</table>
+		<div id="exitStats" class="button">x</div>
+	</div>
+	
+		
+	
 	
 </body>
 </html>

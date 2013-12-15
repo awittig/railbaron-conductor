@@ -67,6 +67,29 @@ $(document).ready(function() {
 	});
 	
 	$("#addPlayer").click().click();
+	$("#statsButton").click(function(){
+		$("#modalBackground").css("display", "block");
+		$("#statsReadOut").css("display", "block");
+		$("#statsReadOut").prepend(
+				'<table id = "playerStats">' + $("#playerStatsTemplate").html() + '</table>'
+				);
+		$(".player").each(function(){
+			var playerName = $(this).find(".playername").val();
+			var hometown = $(this).find(".destinations :selected").last().html();
+			var numTrips = ($(this).find(".trip").size() - 1);
+			var numUnreachable = $(this).find(".unreachable").size();
+			$("#playerStats").append("<tr><td>" + playerName + "</td><td>" + hometown + "</td><td>" + numTrips + "</td><td>" + numUnreachable + "</td></tr>");
+			
+			//var numIncome = Number($(this).find(".payout").last().text());
+			//console.log(numIncome);
+			
+		});
+	});
+	$('#exitStats').click(function(){
+		$(this).siblings("#playerStats").remove();
+		$("#modalBackground").css("display", "none");
+		$(this).parent().css("display", "none");
+	});
 });
 
 var getPayout = function(cityId1, cityId2, target) {
