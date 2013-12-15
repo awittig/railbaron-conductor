@@ -115,18 +115,23 @@ div.payout {
 	font-size:36px;
 	line-height:36px;
 	text-align:center;
+	cursor:pointer;
+	
 }
 .button:hover {
-	cursor:pointer;
 	color:#111;
 }
-
-#addPlayer {
+#controls {
+	float:left;
+	width:45px;
+}
+#addPlayer, #statsButton{
 	margin:4px;
 	width:40px;
-	height:80px;
+	height:50px;
 	float:left;
 }
+
 
 .playerColor {
 	width: 18px;
@@ -140,4 +145,37 @@ div.payout {
 .playerColor div{
 	height: 18px;
 	display: none;
+}
+#modalBackground {
+	display:none;
+	opacity:.7;
+	position:absolute;
+	top:0;
+	left:0;
+	z-index:9;
+	background-color:#eee;
+	height:100%;
+	width:100%;
+	
+}
+#statsReadOut {
+	position:absolute;
+	top:150px;
+	right:30%;
+	left:30%;
+	display:none;
+	z-index:10;
+	background-color:white;
+	margin:auto;
+	border:2px solid black;
+}
+#playerStatsTemplate{
+	display:none;
+}
+#playerStats {
+	text-align:center;
+}
+#exitStats {
+	margin:auto;
+	width:20px;
 }
