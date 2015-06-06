@@ -1,6 +1,6 @@
 $(document).ready(function() {
 	$.ajax({
-		url: "getAllDestinations.do",
+		url: "railbaron-conductor/getAllDestinations.do",
 		dataType: "json"
 	}).done(function(data){
 			for (var i=0;i<data.length;i++){
@@ -94,7 +94,7 @@ $(document).ready(function() {
 
 var getPayout = function(cityId1, cityId2, target) {
 	$.ajax({
-		url: "getPayout.do",
+		url: "railbaron-conductor/getPayout.do",
 		dataType: "json",
 		data: {from: cityId1, to: cityId2}
 	}).done(function(data){
