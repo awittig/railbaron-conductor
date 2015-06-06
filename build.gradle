@@ -13,7 +13,7 @@ apply plugin: 'spring-boot'
 //apply plugin: 'war'
 
 jar {
-    baseName = 'monster-tracker'
+    baseName = 'railbaron-conductor'
     version =  '0.0.1'
 }
 
