@@ -85,6 +85,10 @@ $(document).ready(function () {
         $("#modalBackground").css("display", "none");
         $(this).parent().css("display", "none");
     });
+
+    $(window).on("beforeunload", function() {
+        return "Reloading or closing this page will erase all players and trips.  Are you sure?";
+    });
 });
 
 var getPayout = function (cityId1, cityId2, target) {
