@@ -9,8 +9,8 @@
         this.allCities = cities;
 
         this.players = [
-            new Player('Player 1', 0),
-            new Player('Player 2', 1)
+            new Player('Player Name', 0),
+            new Player('Player Name', 0)
         ];
 
         this.playerColors = ['black', 'red', 'blue', 'green', 'white', 'yellow'];
@@ -23,6 +23,10 @@
             console.log(self.players);
             console.log(player.destinations);
             player.destinations.unshift(undefined);
+        };
+
+        this.addPlayer = function() {
+            self.players.push(new Player('Player Name', 0));
         };
 
         this.calculatePayout = function(player, index) {
