@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html ng-app="railbaron">
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+
+	<link rel="stylesheet" type="text/css" href="railbaron.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.10/angular.min.js"></script>
+    <script type="text/javascript" src="payouts.js"></script>
+    <script src="railbaron-app.js"></script>
+    <style>
+    </style>
+</head>
+<body ng-controller="RailbaronController as ctrl">
+
+<div class="player {{ctrl.playerColors[player.color]}}" ng-repeat="player in ctrl.players">
+
+    <div class="playerColor">
+        <div class="{{ctrl.playerColors[player.color]}}" style="display:block" ng-click="ctrl.cycleColor(player)"></div>
+    </div>
+    <input ng-model="player.name" type="text" class="playerName" />
+    {{player.color}}
+
+    <div class="trip" ng-repeat="destination in player.destinations track by $index">
+        <select ng-model="player.destinations[$index]"
+                ng-options="city as city.name for city in ctrl.allCities"
+                class="destinations">
+        </select>
+        <div class="payout">
+            {{ctrl.calculatePayout(player, $index)}}
+        </div>
+    </div>
+    <input type="button" ng-click="ctrl.addDestination(player)" value="new" />
+
+</div>
+
+</body>
+</html>
