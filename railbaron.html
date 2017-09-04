@@ -19,8 +19,8 @@
         <div class="{{ctrl.playerColors[player.color]}}" style="display:block" ng-click="ctrl.cycleColor(player)"></div>
     </div>
     <input ng-model="player.name" type="text" class="playerName" />
-    {{player.color}}
 
+    <div class="addDestination button" ng-click="ctrl.addDestination(player)">+</div>
     <div class="trip" ng-repeat="destination in player.destinations track by $index">
         <select ng-model="player.destinations[$index]"
                 ng-options="city as city.name for city in ctrl.allCities"
@@ -30,8 +30,6 @@
             {{ctrl.calculatePayout(player, $index)}}
         </div>
     </div>
-    <input type="button" ng-click="ctrl.addDestination(player)" value="new" />
-
 </div>
 
 </body>
