@@ -87,10 +87,20 @@ div.player {
 	
 div.trip {
 	text-align:center;
+	/*animation-duration: 1s;*/
+	/*animation-name: slidein;*/
+	overflow: hidden;
 }
-.trip:hover {
-	/*border:1px dashed black;*/
+
+@keyframes slidein {
+  from {
+    height: 0px;
+  }
+  to {
+    height: 40px;
+  }
 }
+
 .destinations {
 	width:100%
 }
