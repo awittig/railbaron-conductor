@@ -28,7 +28,7 @@
                     ng-change="ctrl.persist()"
                     class="destinations">
             </select>
-            <div class="payout">
+            <div class="payout {{destination.status}}" ng-click="ctrl.markUnreachable(player, $index)">
                 {{ctrl.calculatePayout(player, $index)}}
             </div>
         </div>

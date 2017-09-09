@@ -33,6 +33,12 @@
             }
         };
 
+        this.markUnreachable = function(player, destinationIndex) {
+            var destination = player.destinations[destinationIndex];
+            destination.status = destination.status ? '' : 'unreachable';
+            self.persist();
+        };
+
         this.persist = function() {
             window.localStorage.setItem('players', JSON.stringify(self.players));
         };
@@ -49,7 +55,9 @@
                     for (var j = 0; j < p.destinations.length; j++) {
                         var d = p.destinations[j];
                         if (d) {
+                            var status = d.status;
                             p.destinations[j] = self.allCities[d.id - 1];
+                            p.destinations[j].status = status;
                         }
                     }
                 }
