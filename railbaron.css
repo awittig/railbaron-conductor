@@ -9,6 +9,7 @@ div.playerTemplate {
 }
 body {
 	width: 1750px;
+	background-color: #eee;
 }
 div.player {
 	width:250px;
@@ -92,15 +93,6 @@ div.trip {
 	overflow: hidden;
 }
 
-@keyframes slidein {
-  from {
-    height: 0px;
-  }
-  to {
-    height: 40px;
-  }
-}
-
 .destinations {
 	width:100%
 }
@@ -126,15 +118,26 @@ div.payout {
 	line-height:36px;
 	text-align:center;
 	cursor:pointer;
-	
 }
 .button:hover {
 	color:#111;
 }
 #controls {
 	float:left;
-	width:45px;
+	margin-left: 10px;
+	/*width:100px;*/
 }
+.control {
+	font-family: Helvetica, Calibri, Arial, sans-serif;
+	font-size: 24px;
+	color: #aaa;
+	margin-bottom: 8px;
+}
+.control:hover {
+	color:#111;
+	cursor:pointer;
+}
+
 #addPlayer, #statsButton{
 	margin:4px;
 	width:40px;

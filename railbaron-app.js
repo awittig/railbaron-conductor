@@ -1,32 +1,25 @@
 (function() {
-
     var app = angular.module('railbaron', []);
 
     app.controller('RailbaronController', function() {
 
         var self = this;
-
         this.allCities = cities;
-
-        this.players = [
-            new Player('Player Name', 0),
-            new Player('Player Name', 0)
-        ];
-
         this.playerColors = ['black', 'red', 'blue', 'green', 'white', 'yellow'];
 
         this.cycleColor = function(player) {
             player.color = (player.color + 1) % self.playerColors.length;
+            self.persist();
         };
 
         this.addDestination = function(player) {
-            console.log(self.players);
-            console.log(player.destinations);
             player.destinations.unshift(undefined);
+            self.persist();
         };
 
         this.addPlayer = function() {
-            self.players.push(new Player('Player Name', 0));
+            self.players.push(new Player('player name', 0));
+            self.persist();
         };
 
         this.calculatePayout = function(player, index) {
@@ -40,13 +33,49 @@
             }
         };
 
+        this.persist = function() {
+            window.localStorage.setItem('players', JSON.stringify(self.players));
+        };
+
+        this.initializePlayers = function() {
+            var persistedState = window.localStorage.getItem('players');
+            if (persistedState) {
+                self.players = JSON.parse(persistedState);
+
+                // awkward hack to go back over the destinations and
+                // point them to the same objects that back the select boxes
+                for (var i = 0; i < self.players.length; i++) {
+                    var p = self.players[i];
+                    for (var j = 0; j < p.destinations.length; j++) {
+                        var d = p.destinations[j];
+                        if (d) {
+                            p.destinations[j] = self.allCities[d.id - 1];
+                        }
+                    }
+                }
+            } else {
+                self.players = [
+                    new Player('player name', 0),
+                    new Player('player name', 0)
+                ];
+            }
+        };
+
+        this.newGame = function() {
+            if (confirm('Are you sure you want to start a new game?')) {
+                window.localStorage.removeItem('players');
+                window.location.reload(false);
+            }
+        };
+
+        this.initializePlayers();
+
     });
 
     function Player(n, c) {
         this.name = n;
         this.color = c;
         this.destinations = [{}];
-        // this.destination = {};
     }
 
 })();
