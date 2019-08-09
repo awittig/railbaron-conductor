@@ -852,7 +852,7 @@ var payouts = [
     payout(13, 55, 22000),
     payout(13, 56, 15000),
     payout(13, 57, 12000),
-    payout(13, 58, 22000),
+    payout(13, 58, 24000),
     payout(13, 59, 22500),
     payout(13, 60, 21500),
     payout(13, 61, 8500),
