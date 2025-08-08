@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rail Baron / Boxcars Helper</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="app-header">
+    <h1>Rail Baron / Boxcars Helper</h1>
+    <div class="header-actions">
+      <button id="statsBtn" class="btn">Stats</button>
+      <button id="newGameBtn" class="btn btn-danger">New Game</button>
+      <button id="exportBtn" class="btn">Export</button>
+      <input id="importFile" type="file" accept="application/json" class="hidden" />
+      <button id="importBtn" class="btn">Import</button>
+    </div>
+  </header>
+
+  <main class="layout">
+    <section class="panel players-panel">
+      <div class="panel-header">
+        <h2>Players</h2>
+        <button id="addPlayerBtn" class="btn btn-primary">Add Player</button>
+      </div>
+      <div id="playersContainer" class="players-container"></div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <span>Rules reference: <a href="https://www.riograndegames.com/wp-content/uploads/2013/07/Boxcars-Rules.pdf" target="_blank" rel="noreferrer">Boxcars (Rail Baron) Rules</a></span>
+  </footer>
+
+  <!-- Stats Modal -->
+  <div id="statsModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="statsTitle">
+    <div class="modal-backdrop"></div>
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="statsTitle">Game Statistics</h3>
+        <div class="modal-actions">
+          <button id="downloadCsvBtn" class="btn">Download CSV</button>
+          <button id="closeStatsBtn" class="btn btn-danger">Close</button>
+        </div>
+      </div>
+      <div class="modal-body">
+        <div class="stats-section">
+          <h4>Per Player</h4>
+          <table class="stats-table">
+            <thead>
+              <tr>
+                <th>Player</th>
+                <th>Train</th>
+                <th>Stops</th>
+                <th>Visited</th>
+                <th>Total</th>
+                <th>Avg/Leg</th>
+                <th>Longest</th>
+                <th>Last 3 Legs</th>
+              </tr>
+            </thead>
+            <tbody id="perPlayerStats"></tbody>
+          </table>
+        </div>
+        <div class="stats-section">
+          <h4>Overall</h4>
+          <div id="overallStats"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Reuse existing data -->
+  <script src="../payouts.js"></script>
+  <script src="app.js"></script>
+</body>
+</html> 
