@@ -398,12 +398,7 @@
     return pick;
   }
 
-  // Stats modal
-  const statsModal = document.getElementById('statsModal');
-  const closeStatsBtn = document.getElementById('closeStatsBtn');
-  const perPlayerStats = document.getElementById('perPlayerStats');
-  const overallStats = document.getElementById('overallStats');
-  const downloadCsvBtn = document.getElementById('downloadCsvBtn');
+  // Stats modal (variables declared above)
 
   function openStats() {
     populateStats();
@@ -529,7 +524,6 @@
     }
   });
 
-  const statsBtn = document.getElementById('statsBtn');
   statsBtn.addEventListener('click', openStats);
   closeStatsBtn.addEventListener('click', closeStats);
   statsModal.addEventListener('click', (e) => { if (e.target.classList.contains('modal-backdrop')) closeStats(); });
