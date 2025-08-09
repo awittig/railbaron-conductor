@@ -1,50 +1,98 @@
 <!DOCTYPE html>
-<html ng-app="railbaron">
-<head lang="en">
-    <meta charset="UTF-8">
-    <title></title>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Rail Baron / Boxcars Conductor</title>
+    <link rel="stylesheet" href="railbaron.css" />
+  </head>
+  <body>
+    <header class="app-header" role="banner">
+      <h1>Rail Baron / Boxcars Conductor</h1>
+      <div class="global-actions" role="toolbar" aria-label="Global actions">
+        <button id="btn-stats" class="btn" title="View Stats" aria-label="View statistics">Stats</button>
+        <button id="btn-export" class="btn" title="Export JSON" aria-label="Export game state">Export</button>
+        <label class="btn file-btn" title="Import JSON" aria-label="Import game state">
+          Import
+          <input id="file-import" type="file" accept="application/json" />
+        </label>
+        <button id="btn-new" class="btn danger" title="New Game" aria-label="Start a new game">New Game</button>
+      </div>
+    </header>
 
-	<link rel="stylesheet" type="text/css" href="railbaron.css">
-    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.10/angular.min.js"></script>
-    <script src="payouts.js"></script>
-    <script src="railbaron-app.js"></script>
-    <style>
-    </style>
-</head>
-<body ng-controller="RailbaronController as ctrl">
+    <main id="app" class="app" role="main">
+      <section class="players-toolbar">
+        <button id="btn-add-player" class="btn primary" aria-label="Add player">Add Player</button>
+      </section>
+      <section id="players" class="players" aria-live="polite"></section>
+    </main>
 
-<div class="allPlayers">
-    <div class="player {{ctrl.playerColors[player.color]}}" ng-repeat="player in ctrl.players track by $index">
+    <dialog id="stats-dialog" class="modal" aria-label="Statistics">
+      <form method="dialog">
+        <header class="modal-header">
+          <h2>Statistics</h2>
+          <button id="btn-close-stats" class="icon-btn" aria-label="Close">✕</button>
+        </header>
+        <section class="modal-body">
+          <div class="stats-controls">
+            <label>
+              <input type="checkbox" id="toggle-include-unreachable" />
+              Include unreachable legs
+            </label>
+            <button id="btn-export-csv" class="btn" aria-label="Export CSV">Export CSV</button>
+          </div>
+          <div id="stats-table-wrap"></div>
+        </section>
+      </form>
+    </dialog>
 
-        <div class="playerColor">
-            <div class="{{ctrl.playerColors[player.color]}}" style="display:block" ng-click="ctrl.cycleColor(player)"></div>
-        </div>
-        <input ng-model="player.name" type="text" class="playerName" ng-change="ctrl.persist()"/>
-
-        <div class="addDestination button" ng-click="ctrl.addDestination(player)">+</div>
-        <div class="trip" ng-repeat="destination in player.destinations track by $index">
-            <select ng-model="player.destinations[$index]"
-                    ng-options="city as city.name for city in ctrl.allCities"
-                    ng-change="ctrl.persist()"
-                    class="destinations">
+    <template id="tpl-player-card">
+      <article class="player-card" data-player-id="">
+        <header class="player-header">
+          <input class="player-name" type="text" placeholder="Player name" aria-label="Player name" />
+          <div class="player-controls" role="toolbar" aria-label="Player controls">
+            <select class="player-color" aria-label="Color"></select>
+            <select class="player-train" aria-label="Train type">
+              <option value="Standard">Standard</option>
+              <option value="Express">Express</option>
+              <option value="Super Chief">Super Chief</option>
             </select>
-            <div class="payout {{destination.status}}" ng-click="ctrl.markUnreachable(player, $index)">
-                {{ctrl.calculatePayout(player, $index)}}
-            </div>
+            <button class="btn subtle btn-collapse" aria-expanded="true" aria-label="Collapse player">Collapse</button>
+            <button class="btn subtle btn-layout" aria-label="Toggle stop layout">Layout</button>
+            <button class="btn subtle btn-up" aria-label="Move player up">▲</button>
+            <button class="btn subtle btn-down" aria-label="Move player down">▼</button>
+            <button class="btn danger btn-delete" aria-label="Remove player">Delete</button>
+          </div>
+        </header>
+        <section class="stops" aria-label="Stops list">
+          <div class="stops-toolbar">
+            <button class="btn primary btn-add-stop" aria-label="Add stop">Add Stop</button>
+            <button class="btn btn-roll-stop" aria-label="Roll destination">Roll Stop</button>
+            <span class="last-roll" aria-live="polite"></span>
+          </div>
+          <ul class="stop-list"></ul>
+        </section>
+      </article>
+    </template>
+
+    <template id="tpl-stop-item">
+      <li class="stop" data-stop-index="">
+        <div class="stop-main">
+          <select class="stop-city" aria-label="City select"></select>
+          <span class="payout" aria-label="Payout"></span>
         </div>
-    </div>
-</div>
-<div id="controls">
-    <div class="control" ng-click="ctrl.addPlayer()">add player</div>
-    <div class="control" ng-click="ctrl.newGame()">new game</div>
-</div>
-<script>
-  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
-  ga('create', 'UA-63893121-1', 'auto');
-  ga('send', 'pageview');
-</script>
-</body>
-</html>
+        <div class="stop-actions" role="toolbar" aria-label="Stop actions">
+          <label title="Mark unreachable"><input type="checkbox" class="stop-unreachable" /> Unreachable</label>
+          <button class="btn subtle btn-delete-stop" aria-label="Delete stop">Delete</button>
+        </div>
+        <div class="stop-meta">
+          <span class="roll-text"></span>
+        </div>
+      </li>
+    </template>
+
+    <script src="payouts.js"></script>
+    <script src="boxcars-tables.js"></script>
+    <script src="app.js"></script>
+  </body>
+  </html>
