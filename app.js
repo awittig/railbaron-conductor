@@ -180,6 +180,27 @@
       saveState();
     });
 
+    // Inject compact meta row (home city, latest destination)
+    const headerEl = node.querySelector('.player-header');
+    const controlsEl = node.querySelector('.player-controls');
+    const metaRow = document.createElement('div');
+    metaRow.className = 'player-meta-inline';
+    const homeSpan = document.createElement('span');
+    homeSpan.className = 'home-city';
+    const latestSpan = document.createElement('span');
+    latestSpan.className = 'latest-dest';
+    // Home city (oldest non-null city is home)
+    const homeId = player.homeCityId || null;
+    const homeName = homeId ? (idToCity.get(homeId)?.name || null) : null;
+    homeSpan.textContent = homeName ? `Home: ${homeName}` : '';
+    // Latest destination (newest non-null city)
+    const latestStop = player.stops.find((s) => !!s.cityId);
+    const latestName = latestStop?.cityId ? (idToCity.get(latestStop.cityId)?.name || null) : null;
+    latestSpan.textContent = latestName ? `Latest: ${latestName}` : '';
+    metaRow.appendChild(homeSpan);
+    metaRow.appendChild(latestSpan);
+    if (headerEl && controlsEl) headerEl.insertBefore(metaRow, controlsEl);
+
     // Toolbar: color cycle
     const colorBtn = node.querySelector('.btn-color');
     const applyAccent = () => colorBtn && colorBtn.style.setProperty('background', colorToken(player.color));
@@ -216,13 +237,19 @@
     });
     updateBubbles();
 
-    node.querySelector('.btn-collapse').addEventListener('click', () => {
+    const collapseBtn = node.querySelector('.btn-collapse');
+    if (collapseBtn) {
+      collapseBtn.textContent = player.collapsed ? '+' : '−';
+      collapseBtn.addEventListener('click', () => {
       player.collapsed = !player.collapsed;
       saveState();
       render();
-    });
-    node.querySelector('.btn-up').addEventListener('click', () => movePlayer(index, -1));
-    node.querySelector('.btn-down').addEventListener('click', () => movePlayer(index, +1));
+      });
+    }
+    const upBtn = node.querySelector('.btn-up');
+    if (upBtn) { upBtn.textContent = '◀'; upBtn.addEventListener('click', () => movePlayer(index, -1)); }
+    const downBtn = node.querySelector('.btn-down');
+    if (downBtn) { downBtn.textContent = '▶'; downBtn.addEventListener('click', () => movePlayer(index, +1)); }
     node.querySelector('.btn-delete').addEventListener('click', () => deletePlayer(player.id));
 
     // Stops

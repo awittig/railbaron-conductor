@@ -135,8 +135,8 @@ body {
   border-radius: 10px;
 }
 .player-controls { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
-.player-toolbar { display: inline-flex; gap: 6px; align-items: center; }
-.player-toolbar .icon-btn.small { padding: 4px 8px; border-radius: 8px; }
+.player-toolbar { display: inline-flex; gap: 8px; align-items: center; }
+.player-toolbar .icon-btn.small { padding: 8px 12px; border-radius: 10px; font-size: 14px; }
 .player-toolbar .btn-delete { color: var(--rose); border-color: color-mix(in srgb, var(--rose) 40%, var(--border)); }
 .player-toolbar .btn-delete:hover { filter: brightness(1.1); }
 .btn-color { width: 22px; height: 22px; border: 1px solid var(--border); border-radius: 50%; background: var(--accent, var(--teal)); box-shadow: var(--shadow); }
@@ -148,6 +148,20 @@ body {
   border-radius: 10px;
   padding: 8px 10px;
 }
+
+/* Compact meta row for home and latest destination */
+.player-meta-inline {
+  display: flex;
+  gap: 12px;
+  align-items: baseline;
+  font-size: 12px;
+  color: var(--muted);
+}
+.player-meta-inline .home-city { opacity: 0.85; }
+.player-meta-inline .latest-dest { opacity: 0.85; }
+
+/* When collapsed, keep meta visible and hide stops only */
+.player-card.collapsed .player-meta-inline { display: flex; }
 
 /* Train bubble selector */
 .train-bubbles { display: inline-flex; align-items: center; gap: 0; border: 1px solid var(--border); border-radius: 999px; overflow: hidden; background: #0e131a; }
@@ -194,6 +208,7 @@ body {
 .stop-meta { color: var(--muted); font-size: 12px; margin-top: 6px; }
 
 .player-card.collapsed .stops { display: none; }
+.player-card.collapsed .stops-toolbar { display: none; }
 
 .modal::backdrop { background: rgba(0,0,0,0.6); backdrop-filter: blur(2px); }
 .modal { width: min(960px, 92vw); border: 1px solid var(--border); border-radius: 14px; background: var(--panel); color: var(--text); }
