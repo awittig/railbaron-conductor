@@ -46,6 +46,22 @@
       </form>
     </dialog>
 
+    <dialog id="region-dialog" class="modal" aria-label="Choose Region">
+      <form method="dialog">
+        <header class="modal-header">
+          <h2>Choose Region</h2>
+          <button id="btn-close-region" class="icon-btn" aria-label="Close">✕</button>
+        </header>
+        <section class="modal-body">
+          <p class="muted">You rolled the same region as your current location. Choose any region instead.</p>
+          <div id="region-options" class="region-options" role="radiogroup" aria-label="Regions"></div>
+          <div style="margin-top:12px; display:flex; gap:8px; justify-content:flex-end;">
+            <button id="btn-region-confirm" class="btn primary" aria-label="Use selected region">Use Selected</button>
+          </div>
+        </section>
+      </form>
+    </dialog>
+
     <template id="tpl-player-card">
       <article class="player-card" data-player-id="">
         <header class="player-header">

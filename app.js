@@ -264,8 +264,9 @@
       render();
     });
 
-    // Delete stop
+    // Delete stop (with confirmation)
     node.querySelector('.btn-delete-stop').addEventListener('click', () => {
+      if (!confirm('Delete this stop?')) return;
       player.stops.splice(stopIdx, 1);
       if (player.stops.length === 0) player.stops.push(defaultStop());
       recomputeAllPayouts(player);
@@ -302,24 +303,20 @@
   }
 
   // ----- Rolling logic -----
-  function rollNextStop(player, cardNode) {
+  async function rollNextStop(player, cardNode) {
     const oe1 = BOXCARS.rollOddEven();
     const s1 = BOXCARS.roll2d6();
     let region = BOXCARS.mapRegion(oe1, s1);
 
     const currentRegion = getCurrentRegion(player);
     if (currentRegion && region === currentRegion) {
-      // Operator may choose any region instead
-      const choice = prompt(
-        `Rolled ${oe1}+${s1} → ${region}. You may choose any region instead.\nEnter region name or leave blank to keep:`,
-        region
-      );
-      if (choice && BOXCARS.CITY_IDS_BY_REGION[choice]) region = choice;
+      // Operator may choose any region instead via in-app dialog
+      region = await chooseRegionInApp(region);
     }
 
     const oe2 = BOXCARS.rollOddEven();
     const s2 = BOXCARS.roll2d6();
-    const cityId = BOXCARS.pickCityDeterministic(region, oe2, s2);
+    const cityId = BOXCARS.pickCityByTable(region, oe2, s2);
     const cityName = idToCity.get(cityId)?.name || '—';
 
     const rollText = `${capitalize(oe1)}+${s1} → ${region}; ${capitalize(oe2)}+${s2} → ${cityName}.`;
@@ -334,6 +331,68 @@
     saveState();
     render();
   }
+
+  function chooseRegionInApp(defaultRegion) {
+    const dialog = document.getElementById('region-dialog');
+    const optionsWrap = document.getElementById('region-options');
+    const confirmBtn = document.getElementById('btn-region-confirm');
+    const closeBtn = document.getElementById('btn-close-region');
+    if (!dialog || !optionsWrap) return Promise.resolve(defaultRegion);
+
+    return new Promise((resolve) => {
+      const regions = BOXCARS.REGIONS;
+      optionsWrap.innerHTML = '';
+      let selected = defaultRegion;
+      regions.forEach((r) => {
+        const label = document.createElement('label');
+        label.className = 'region';
+        label.dataset.value = r;
+        const input = document.createElement('input');
+        input.type = 'radio';
+        input.name = 'region';
+        input.value = r;
+        if (r === selected) input.checked = true;
+        const span = document.createElement('span');
+        span.textContent = r;
+        label.appendChild(input);
+        label.appendChild(span);
+        label.addEventListener('click', () => {
+          selected = r;
+          updateRegionSelection();
+        });
+        optionsWrap.appendChild(label);
+      });
+
+      function updateRegionSelection() {
+        optionsWrap.querySelectorAll('.region').forEach((el) => {
+          el.dataset.checked = el.dataset.value === selected ? 'true' : 'false';
+          const input = el.querySelector('input[type="radio"]');
+          if (input) input.checked = el.dataset.value === selected;
+        });
+      }
+      updateRegionSelection();
+
+      function onConfirm(e) { e.preventDefault(); cleanup(); dialog.close(); resolve(selected); }
+      function onClose() { cleanup(); resolve(defaultRegion); }
+      function onBackdrop(e) {
+        const rect = dialog.getBoundingClientRect();
+        const inDialog = (e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.top && e.clientY <= rect.bottom);
+        if (!inDialog) { cleanup(); dialog.close(); resolve(defaultRegion); }
+      }
+
+      confirmBtn.addEventListener('click', onConfirm);
+      closeBtn.addEventListener('click', onClose);
+      dialog.addEventListener('click', onBackdrop);
+      dialog.showModal();
+
+      function cleanup() {
+        confirmBtn.removeEventListener('click', onConfirm);
+        closeBtn.removeEventListener('click', onClose);
+        dialog.removeEventListener('click', onBackdrop);
+      }
+    });
+  }
+
 
   function capitalize(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
 
