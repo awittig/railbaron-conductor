@@ -279,9 +279,41 @@ const destinationTableGB = {
           11: "Portsmouth",
           12: "Reading"
         }
+      },
+      "London": {
+        odd: {
+          2: "LONDON",
+          3: "LONDON",
+          4: "LONDON",
+          5: "LONDON",
+          6: "LONDON",
+          7: "LONDON",
+          8: "LONDON",
+          9: "LONDON",
+          10: "LONDON",
+          11: "LONDON",
+          12: "LONDON"
+        },
+        even: {
+          2: "LONDON",
+          3: "LONDON",
+          4: "LONDON",
+          5: "LONDON",
+          6: "LONDON",
+          7: "LONDON",
+          8: "LONDON",
+          9: "LONDON",
+          10: "LONDON",
+          11: "LONDON",
+          12: "LONDON"
+        }
       }
     }
   };
+  // Expose GB destination table globally for app integration
+  if (typeof window !== 'undefined') {
+    window.destinationTableGB = destinationTableGB;
+  }
   
   // Great Britain payoff table (city-to-city payouts)
   // Order of cities in `cities` matches both X and Y axes of the `matrix`
@@ -491,3 +523,69 @@ const destinationTableGB = {
       [17,12,68,10,18,6,9,7,7,4,11,15,7,15,130,14,14,12,14,68,14,130,6,130,12,9,6,14,2,5,2,15,68,130,10,17,117,19,11,10,5,11,11,14,11,10,2,16,11,17,10,7,20,5,2,6,4,6,10,11,119,4,15,4,116,10,5,16,9,21,9,23,12,7,20,14,110,7,13,2,3,68,13,13,7,12,10,8,115,11,45,13,117,68,24,12,19,68,11,0]
     ]
   };
+  // Expose GB payoff table globally (optional)
+  if (typeof window !== 'undefined') {
+    window.payoffTableGB = payoffTableGB;
+  }
+
+  // Build GB runtime helpers and export on window
+  (function() {
+    // City list with ids 1..N
+    const CITIES = payoffTableGB.cities.map((name, idx) => ({ id: idx + 1, name }));
+
+    // Name → id map (case-insensitive, trim)
+    const NAME_TO_ID = new Map();
+    function normalizeName(s) {
+      return String(s)
+        .toLowerCase()
+        .trim()
+        .replace(/[’‘]/g, "'")
+        .replace(/[“”]/g, '"')
+        .replace(/\s+/g, ' ');
+    }
+    for (const c of CITIES) {
+      NAME_TO_ID.set(normalizeName(c.name), c.id);
+    }
+
+    function resolveIdByName(name) {
+      if (!name) return null;
+      return NAME_TO_ID.get(normalizeName(name)) || null;
+    }
+
+    // Compute GB city ids by region using destination charts
+    const CITY_IDS_BY_REGION = {};
+    if (typeof window !== 'undefined' && window.destinationTableGB && window.destinationTableGB.destinationCharts) {
+      const charts = window.destinationTableGB.destinationCharts;
+      for (const [region, chart] of Object.entries(charts)) {
+        const ids = new Set();
+        ['odd', 'even'].forEach((oe) => {
+          const table = chart[oe] || {};
+          Object.values(table).forEach((cityName) => {
+            const id = resolveIdByName(cityName);
+            if (id) ids.add(id);
+          });
+        });
+        CITY_IDS_BY_REGION[region] = Array.from(ids).sort((a, b) => a - b);
+      }
+    }
+
+    function findPayoutGB(a, b) {
+      if (!a || !b) return undefined;
+      const i = a - 1;
+      const j = b - 1;
+      const m = payoffTableGB.matrix;
+      if (!m || !m[i] || typeof m[i][j] === 'undefined') return undefined;
+      return m[i][j];
+    }
+
+    // Export
+    if (typeof window !== 'undefined') {
+      window.BOXCARS_GB = {
+        CITIES,
+        CITY_IDS_BY_REGION,
+        findPayout: findPayoutGB,
+        resolveIdByName,
+        REGIONS: Object.keys(window.destinationTableGB.destinationCharts || {}),
+      };
+    }
+  })();

@@ -1,27 +1,41 @@
 (function() {
   'use strict';
 
-  if (typeof window.cities === 'undefined' || typeof window.findPayout === 'undefined') {
-    alert('Error: City/payout data failed to load. Please ensure payouts.js is available.');
+  if (typeof window.BOXCARS === 'undefined') {
+    alert('Error: Core tables failed to load.');
     return;
   }
 
-  // ----- Data enrichment -----
-  // cities array and findPayout are provided by payouts.js
-  const idToCity = new Map();
-  for (const c of cities) {
-    idToCity.set(c.id, { id: c.id, name: c.name, region: null });
+  // ----- Data enrichment (per selected map) -----
+  let activeFindPayout = (a, b) => undefined;
+  let idToCity = new Map();
+  let enrichedCities = [];
+  let activeRegions = [];
+
+  function setupActiveDataset(map) {
+    // Build city map from selected dataset
+    idToCity = new Map();
+    const useGB = (map === 'GB' && typeof window.BOXCARS_GB !== 'undefined');
+    const srcCities = useGB ? window.BOXCARS_GB.CITIES : (window.cities || []);
+    for (const c of srcCities) {
+      idToCity.set(c.id, { id: c.id, name: c.name, region: null });
+    }
+
+    // Region membership
+    const idToRegion = new Map();
+    const cityIdsByRegion = useGB ? window.BOXCARS_GB.CITY_IDS_BY_REGION : window.BOXCARS.CITY_IDS_BY_REGION;
+    for (const [regionName, ids] of Object.entries(cityIdsByRegion || {})) {
+      for (const id of ids) idToRegion.set(id, regionName);
+    }
+    for (const [id, c] of idToCity) {
+      c.region = idToRegion.get(id) || 'Unknown';
+    }
+    enrichedCities = Array.from(idToCity.values()).sort((a, b) => a.name.localeCompare(b.name));
+
+    // Payout resolver and regions list
+    activeFindPayout = useGB ? window.BOXCARS_GB.findPayout : window.findPayout;
+    activeRegions = useGB ? (window.BOXCARS_GB.REGIONS || []) : (window.BOXCARS.REGIONS || []);
   }
-  // Enrich with region using BOXCARS tables
-  const idToRegion = new Map();
-  for (const [regionName, ids] of Object.entries(BOXCARS.CITY_IDS_BY_REGION)) {
-    for (const id of ids) idToRegion.set(id, regionName);
-  }
-  for (const [id, c] of idToCity) {
-    c.region = idToRegion.get(id) || 'Unknown';
-  }
-  const enrichedCities = Array.from(idToCity.values());
-  enrichedCities.sort((a, b) => a.name.localeCompare(b.name));
 
   // ----- State management -----
   const STORAGE_KEY = 'rb_conductor_state_v3';
@@ -87,13 +101,15 @@
   // ----- Payouts and recomputation -----
   function computePayout(prevCityId, currCityId) {
     if (!prevCityId || !currCityId) return null;
-    const amount = findPayout(prevCityId, currCityId);
+    const amount = activeFindPayout(prevCityId, currCityId);
     return typeof amount === 'number' ? amount : null;
   }
 
   function formatCurrency(amt) {
     if (amt == null) return '';
-    return '$' + amt.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    const isGB = state.settings.map === 'GB';
+    const sym = isGB ? '£' : '$';
+    return sym + amt.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
   }
 
   function recomputeAllPayouts(player) {
@@ -134,6 +150,13 @@
   const colorOptions = ['black','red','blue','green','white','yellow'];
 
   function render() {
+    // Update header with selected map
+    const headerTitle = document.querySelector('header.app-header h1');
+    if (headerTitle) {
+      const mapText = state.settings.map === 'GB' ? 'Great Britain' : 'America';
+      headerTitle.textContent = `Boxcars Conductor: ${mapText}`;
+    }
+
     playersRoot.innerHTML = '';
     state.players.forEach((player, idx) => {
       const card = renderPlayerCard(player, idx);
@@ -323,11 +346,11 @@
     const s2 = BOXCARS.roll2d6();
     let cityId = null;
     let cityName = '—';
-    if (state.settings.map === 'GB' && typeof window.destinationTableGB !== 'undefined') {
+    if (state.settings.map === 'GB' && typeof window.destinationTableGB !== 'undefined' && typeof window.BOXCARS_GB !== 'undefined') {
       const rchart = window.destinationTableGB.destinationCharts[region];
       const cname = rchart?.[oe2]?.[s2] || null;
       cityName = cname || '—';
-      // GB payout/city ids pending; for now leave cityId null until GB payouts provided
+      if (cname) { cityId = window.BOXCARS_GB.resolveIdByName(cname); }
     } else {
       cityId = BOXCARS.pickCityByTable(region, oe2, s2);
       cityName = idToCity.get(cityId)?.name || '—';
@@ -362,7 +385,7 @@
     if (!dialog || !optionsWrap) return Promise.resolve(defaultRegion);
 
     return new Promise((resolve) => {
-      const regions = BOXCARS.REGIONS;
+      const regions = (state.settings.map === 'GB' && typeof window.BOXCARS_GB !== 'undefined') ? window.BOXCARS_GB.REGIONS : BOXCARS.REGIONS;
       optionsWrap.innerHTML = '';
       let selected = defaultRegion;
       regions.forEach((r) => {
@@ -542,6 +565,7 @@
         if (!confirm('Importing will replace the current game state. Continue?')) return;
         localStorage.setItem(STORAGE_KEY, JSON.stringify(parsed));
         loadState();
+        setupActiveDataset(state.settings.map || 'US');
         render();
       } catch (e) {
         alert('Import failed: ' + e.message);
@@ -555,6 +579,7 @@
     showMapDialog(state.settings.map || 'US').then((map) => {
       state = { players: [], settings: { map } };
       saveState();
+      setupActiveDataset(map || 'US');
       render();
     }).catch(() => {/* noop on cancel */});
   }
@@ -568,6 +593,8 @@
     });
 
     document.getElementById('btn-new').addEventListener('click', newGame);
+
+    // No runtime map switching during a game
 
     document.getElementById('btn-export').addEventListener('click', exportJSON);
 
@@ -686,11 +713,13 @@
   }
 
   loadState();
+  setupActiveDataset(state.settings.map || 'US');
   // If first load (no players) show map select once
   if (!localStorage.getItem(STORAGE_KEY)) {
     showMapDialog(state.settings.map || 'US').then((map) => {
       state.settings.map = map;
       saveState();
+      setupActiveDataset(map || 'US');
       render();
     });
   }
