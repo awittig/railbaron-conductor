@@ -71,12 +71,16 @@ body {
   border-radius: 10px;
   cursor: pointer;
   box-shadow: var(--shadow);
+  font-size: 14px;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
 }
 .btn.primary { background: var(--panel); border-color: color-mix(in srgb, var(--blue) 50%, var(--border)); color: var(--text); }
 .btn.danger { border-color: color-mix(in srgb, var(--rose) 50%, var(--border)); }
 .btn.subtle { background: transparent; }
 .file-btn { position: relative; overflow: hidden; }
-.file-btn input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+.file-btn input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; font-size: 0; }
 .icon-btn { padding: 6px 10px; }
 
 .app { padding: 16px 20px; }
