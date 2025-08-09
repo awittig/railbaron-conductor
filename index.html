@@ -51,17 +51,27 @@
         <header class="player-header">
           <input class="player-name" type="text" placeholder="Player name" aria-label="Player name" />
           <div class="player-controls" role="toolbar" aria-label="Player controls">
-            <select class="player-color" aria-label="Color"></select>
-            <select class="player-train" aria-label="Train type">
-              <option value="Standard">Standard</option>
-              <option value="Express">Express</option>
-              <option value="Super Chief">Super Chief</option>
-            </select>
-            <button class="btn subtle btn-collapse" aria-expanded="true" aria-label="Collapse player">Collapse</button>
-            <button class="btn subtle btn-layout" aria-label="Toggle stop layout">Layout</button>
-            <button class="btn subtle btn-up" aria-label="Move player up">▲</button>
-            <button class="btn subtle btn-down" aria-label="Move player down">▼</button>
-            <button class="btn danger btn-delete" aria-label="Remove player">Delete</button>
+            <div class="player-toolbar" role="group" aria-label="Card toolbar">
+              <button class="icon-btn small btn-color" aria-label="Change color" title="Change color"></button>
+              <button class="icon-btn small btn-collapse" aria-expanded="true" aria-label="Collapse player" title="Collapse/Expand">▾</button>
+              <button class="icon-btn small btn-up" aria-label="Move player up" title="Move up">▲</button>
+              <button class="icon-btn small btn-down" aria-label="Move player down" title="Move down">▼</button>
+              <button class="icon-btn small btn-delete" aria-label="Remove player" title="Delete player">🗑</button>
+            </div>
+            <div class="train-bubbles" role="radiogroup" aria-label="Train type">
+              <label class="bubble" data-value="Standard">
+                <input type="radio" value="Standard" />
+                <span>Standard</span>
+              </label>
+              <label class="bubble" data-value="Express">
+                <input type="radio" value="Express" />
+                <span>Express</span>
+              </label>
+              <label class="bubble" data-value="Super Chief">
+                <input type="radio" value="Super Chief" />
+                <span>Super Chief</span>
+              </label>
+            </div>
           </div>
         </header>
         <section class="stops" aria-label="Stops list">

@@ -27,7 +27,7 @@
   const STORAGE_KEY = 'rb_conductor_state_v2';
 
   /** @typedef {{ cityId: number|null, payoutFromPrev: number|null, unreachable: boolean, lastRollText: string }} Stop */
-  /** @typedef {{ id: string, name: string, color: string, train: 'Standard'|'Express'|'Super Chief', stops: Stop[], collapsed: boolean, stopLayout: 'horizontal'|'vertical', homeCityId?: number|null, visitedCityIds?: number[] }} Player */
+  /** @typedef {{ id: string, name: string, color: string, train: 'Standard'|'Express'|'Super Chief', stops: Stop[], collapsed: boolean, homeCityId?: number|null, visitedCityIds?: number[] }} Player */
 
   /** @type {{ players: Player[] }} */
   let state = { players: [] };
@@ -40,11 +40,10 @@
     return {
       id: uuid(),
       name: 'Player',
-      color: 'teal',
+      color: 'black',
       train: 'Standard',
       stops: [defaultStop()],
       collapsed: false,
-      stopLayout: 'vertical',
     };
   }
 
@@ -61,10 +60,9 @@
       state.players = parsed.players.map((p) => ({
         id: String(p.id || uuid()),
         name: String(p.name || 'Player'),
-        color: String(p.color || 'teal'),
+        color: ['black','red','blue','green','white','yellow'].includes(String(p.color)) ? String(p.color) : 'black',
         train: p.train === 'Express' || p.train === 'Super Chief' ? p.train : 'Standard',
         collapsed: !!p.collapsed,
-        stopLayout: p.stopLayout === 'horizontal' ? 'horizontal' : 'vertical',
         stops: Array.isArray(p.stops) && p.stops.length ? p.stops.map((s) => ({
           cityId: s.cityId ?? null,
           payoutFromPrev: null,
@@ -131,9 +129,8 @@
   const tplPlayerCard = document.getElementById('tpl-player-card');
   const tplStopItem = document.getElementById('tpl-stop-item');
 
-  const colorOptions = [
-    'teal','violet','rose','amber','lime','cyan','blue','green','red','orange','yellow','purple'
-  ];
+  // Only the six player colors used in Rail Baron
+  const colorOptions = ['black','red','blue','green','white','yellow'];
 
   function render() {
     playersRoot.innerHTML = '';
@@ -148,7 +145,6 @@
     const node = tplPlayerCard.content.firstElementChild.cloneNode(true);
     node.dataset.playerId = player.id;
     node.classList.toggle('collapsed', !!player.collapsed);
-    node.classList.toggle('layout-horizontal', player.stopLayout === 'horizontal');
     node.style.setProperty('--accent', colorToken(player.color));
     node.setAttribute('draggable', 'true');
 
@@ -159,35 +155,43 @@
       saveState();
     });
 
-    const colorSelect = node.querySelector('.player-color');
-    colorSelect.innerHTML = '';
-    for (const c of colorOptions) {
-      const opt = document.createElement('option');
-      opt.value = c;
-      opt.textContent = c;
-      if (c === player.color) opt.selected = true;
-      colorSelect.appendChild(opt);
-    }
-    colorSelect.addEventListener('change', () => {
-      player.color = colorSelect.value;
+    // Toolbar: color cycle
+    const colorBtn = node.querySelector('.btn-color');
+    const applyAccent = () => colorBtn && colorBtn.style.setProperty('background', colorToken(player.color));
+    applyAccent();
+    colorBtn.addEventListener('click', () => {
+      const idx = (colorOptions.indexOf(player.color) + 1) % colorOptions.length;
+      player.color = colorOptions[idx];
       node.style.setProperty('--accent', colorToken(player.color));
+      applyAccent();
       saveState();
     });
 
-    const trainSelect = node.querySelector('.player-train');
-    trainSelect.value = player.train;
-    trainSelect.addEventListener('change', () => {
-      player.train = trainSelect.value;
-      saveState();
+    // Train bubbles
+    const bubbleGroup = node.querySelector('.train-bubbles');
+    const updateBubbles = () => {
+      bubbleGroup.querySelectorAll('.bubble').forEach((b) => {
+        const val = b.dataset.value;
+        const checked = val === player.train;
+        b.dataset.checked = checked ? 'true' : 'false';
+        const input = b.querySelector('input[type="radio"]');
+        if (input) input.checked = checked;
+      });
+    };
+    bubbleGroup.addEventListener('click', (e) => {
+      const label = e.target.closest('.bubble');
+      if (!label) return;
+      const val = label.dataset.value;
+      if (val && val !== player.train) {
+        player.train = val;
+        saveState();
+        updateBubbles();
+      }
     });
+    updateBubbles();
 
     node.querySelector('.btn-collapse').addEventListener('click', () => {
       player.collapsed = !player.collapsed;
-      saveState();
-      render();
-    });
-    node.querySelector('.btn-layout').addEventListener('click', () => {
-      player.stopLayout = player.stopLayout === 'horizontal' ? 'vertical' : 'horizontal';
       saveState();
       render();
     });
