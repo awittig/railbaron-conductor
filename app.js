@@ -24,13 +24,13 @@
   enrichedCities.sort((a, b) => a.name.localeCompare(b.name));
 
   // ----- State management -----
-  const STORAGE_KEY = 'rb_conductor_state_v2';
+  const STORAGE_KEY = 'rb_conductor_state_v3';
 
   /** @typedef {{ cityId: number|null, payoutFromPrev: number|null, unreachable: boolean, lastRollText: string }} Stop */
   /** @typedef {{ id: string, name: string, color: string, train: 'Standard'|'Express'|'Super Chief', stops: Stop[], collapsed: boolean, homeCityId?: number|null, visitedCityIds?: number[] }} Player */
 
-  /** @type {{ players: Player[] }} */
-  let state = { players: [] };
+  /** @type {{ players: Player[], settings: { map: 'US'|'GB' } }} */
+  let state = { players: [], settings: { map: 'US' } };
 
   function uuid() {
     return 'p-' + Math.random().toString(36).slice(2, 9);
@@ -57,6 +57,7 @@
       if (!raw) return;
       const parsed = JSON.parse(raw);
       if (!parsed || !Array.isArray(parsed.players)) return;
+      state.settings = parsed.settings && parsed.settings.map === 'GB' ? { map: 'GB' } : { map: 'US' };
       state.players = parsed.players.map((p) => ({
         id: String(p.id || uuid()),
         name: String(p.name || 'Player'),
@@ -304,7 +305,13 @@
   async function rollNextStop(player, cardNode) {
     const oe1 = BOXCARS.rollOddEven();
     const s1 = BOXCARS.roll2d6();
-    let region = BOXCARS.mapRegion(oe1, s1);
+    let region;
+    if (state.settings.map === 'GB' && typeof window.destinationTableGB !== 'undefined') {
+      const table = window.destinationTableGB.regionChart[oe1];
+      region = table && table[s1];
+    } else {
+      region = BOXCARS.mapRegion(oe1, s1);
+    }
 
     const currentRegion = getCurrentRegion(player);
     if (currentRegion && region === currentRegion) {
@@ -314,8 +321,17 @@
 
     const oe2 = BOXCARS.rollOddEven();
     const s2 = BOXCARS.roll2d6();
-    const cityId = BOXCARS.pickCityByTable(region, oe2, s2);
-    const cityName = idToCity.get(cityId)?.name || '—';
+    let cityId = null;
+    let cityName = '—';
+    if (state.settings.map === 'GB' && typeof window.destinationTableGB !== 'undefined') {
+      const rchart = window.destinationTableGB.destinationCharts[region];
+      const cname = rchart?.[oe2]?.[s2] || null;
+      cityName = cname || '—';
+      // GB payout/city ids pending; for now leave cityId null until GB payouts provided
+    } else {
+      cityId = BOXCARS.pickCityByTable(region, oe2, s2);
+      cityName = idToCity.get(cityId)?.name || '—';
+    }
 
     const rollText = `${capitalize(oe1)}+${s1} → ${region}; ${capitalize(oe2)}+${s2} → ${cityName}.`;
 
@@ -324,11 +340,11 @@
     if (isEmpty) {
       // Populate the existing initial stop as the home city
       const target = player.stops[player.stops.length - 1];
-      target.cityId = cityId;
+      if (cityId) target.cityId = cityId;
       target.lastRollText = rollText;
     } else {
       const newStop = defaultStop();
-      newStop.cityId = cityId;
+      if (cityId) newStop.cityId = cityId;
       newStop.lastRollText = rollText;
       player.stops.unshift(newStop);
     }
@@ -536,7 +552,9 @@
 
   function newGame() {
     if (!confirm('Start a new game? This will clear all players and stops.')) return;
-    state = { players: [] };
+    const choice = prompt('Select map: type US for America or GB for Great Britain', state.settings.map || 'US');
+    const map = (choice && choice.toUpperCase() === 'GB') ? 'GB' : 'US';
+    state = { players: [], settings: { map } };
     saveState();
     render();
   }

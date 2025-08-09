@@ -357,6 +357,14 @@
     return id;
   }
 
+  function getCityByTable(regionName, oddEvenStr, sum2d6) {
+    const regionChart = destinationTable.destinationCharts[regionName];
+    if (!regionChart) return { id: null, name: null };
+    const cityName = regionChart[oddEvenStr]?.[sum2d6] || null;
+    const id = resolveCityIdFromName(regionName, cityName);
+    return { id, name: cityName };
+  }
+
   // Export globals
   window.BOXCARS = {
     REGIONS,
@@ -367,6 +375,7 @@
     roll2d6,
     mapRegion,
     pickCityByTable,
+    getCityByTable,
   };
 })();
 
