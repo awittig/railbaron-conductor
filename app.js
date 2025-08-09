@@ -220,10 +220,6 @@
       rollNextStop(player, node);
     });
 
-    // Last roll indicator shows on header (last stop's roll)
-    const lastRollText = player._pendingRollText || player.stops[0]?.lastRollText || '';
-    node.querySelector('.last-roll').textContent = lastRollText;
-
     return node;
   }
 
@@ -324,10 +320,18 @@
     const rollText = `${capitalize(oe1)}+${s1} → ${region}; ${capitalize(oe2)}+${s2} → ${cityName}.`;
 
     // Automatically apply the rolled stop
-    const newStop = defaultStop();
-    newStop.cityId = cityId;
-    newStop.lastRollText = rollText;
-    player.stops.unshift(newStop);
+    const isEmpty = player.stops.every((s) => !s.cityId);
+    if (isEmpty) {
+      // Populate the existing initial stop as the home city
+      const target = player.stops[player.stops.length - 1];
+      target.cityId = cityId;
+      target.lastRollText = rollText;
+    } else {
+      const newStop = defaultStop();
+      newStop.cityId = cityId;
+      newStop.lastRollText = rollText;
+      player.stops.unshift(newStop);
+    }
     player._pendingRollText = '';
     recomputeAllPayouts(player);
     saveState();
