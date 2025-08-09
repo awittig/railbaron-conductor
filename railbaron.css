@@ -92,10 +92,7 @@ body {
   align-items: start;
 }
 
-/* Subtle reorder animation */
-.player-card {
-  transition: transform .25s ease;
-}
+/* Removed reorder animation */
 
 .player-card {
   background:

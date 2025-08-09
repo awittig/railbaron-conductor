@@ -690,43 +690,6 @@
   function bindDragAndDrop() {
     const cards = Array.from(playersRoot.querySelectorAll('.player-card'));
     let dragId = null;
-
-    function captureCardRects() {
-      const rects = new Map();
-      Array.from(playersRoot.querySelectorAll('.player-card')).forEach((el) => {
-        rects.set(el.dataset.playerId, el.getBoundingClientRect());
-      });
-      return rects;
-    }
-
-    function animateReorder(prevRects) {
-      const newCards = Array.from(playersRoot.querySelectorAll('.player-card'));
-      newCards.forEach((el) => {
-        const id = el.dataset.playerId;
-        const prev = prevRects.get(id);
-        if (!prev) return;
-        const next = el.getBoundingClientRect();
-        const dx = prev.left - next.left;
-        const dy = prev.top - next.top;
-        if (dx === 0 && dy === 0) return;
-        // Set initial transform without transition
-        el.style.transition = 'none';
-        el.style.transform = `translate(${dx}px, ${dy}px)`;
-        // Double RAF to ensure initial state is committed before animating back to 0
-        requestAnimationFrame(() => {
-          requestAnimationFrame(() => {
-            el.style.transition = 'transform 250ms ease';
-            el.style.transform = 'translate(0,0)';
-            const cleanup = () => {
-              el.style.transition = '';
-              el.style.transform = '';
-              el.removeEventListener('transitionend', cleanup);
-            };
-            el.addEventListener('transitionend', cleanup);
-          });
-        });
-      });
-    }
     cards.forEach((card) => {
       card.addEventListener('dragstart', (e) => {
         dragId = card.dataset.playerId;
@@ -737,7 +700,6 @@
         e.preventDefault();
         const targetId = card.dataset.playerId;
         if (!dragId || dragId === targetId) return;
-        const prevRects = captureCardRects();
         const fromIdx = state.players.findIndex((p) => p.id === dragId);
         const toIdx = state.players.findIndex((p) => p.id === targetId);
         if (fromIdx < 0 || toIdx < 0) return;
@@ -745,7 +707,6 @@
         state.players.splice(toIdx, 0, p);
         saveState();
         render();
-        requestAnimationFrame(() => animateReorder(prevRects));
       });
     });
   }
