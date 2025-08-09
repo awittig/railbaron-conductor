@@ -180,9 +180,49 @@
       saveState();
     });
 
+    // Inject compact meta row (home city, latest destination)
+    const headerEl = node.querySelector('.player-header');
+    const controlsEl = node.querySelector('.player-controls');
+    const metaRow = document.createElement('div');
+    metaRow.className = 'player-meta-inline';
+    const homeSpan = document.createElement('span');
+    homeSpan.className = 'home-city';
+    const latestSpan = document.createElement('span');
+    latestSpan.className = 'latest-dest';
+    // Home city (oldest non-null city is home)
+    const homeId = player.homeCityId || null;
+    const homeName = homeId ? (idToCity.get(homeId)?.name || null) : null;
+    homeSpan.textContent = homeName ? `Home: ${homeName}` : '';
+    // Latest destination (newest non-null city)
+    const latestIdx = player.stops.findIndex((s) => !!s.cityId);
+    const latestStop = latestIdx >= 0 ? player.stops[latestIdx] : null;
+    const latestName = latestStop?.cityId ? (idToCity.get(latestStop.cityId)?.name || null) : null;
+    let payoutSuffix = '';
+    if (latestStop && latestStop.cityId) {
+      const prevId = player.stops[latestIdx + 1]?.cityId || null;
+      const amt = computePayout(prevId, latestStop.cityId);
+      if (amt != null) payoutSuffix = ` · ${formatCurrency(amt)}`;
+    }
+    latestSpan.textContent = latestName ? `Latest: ${latestName}${payoutSuffix}` : '';
+    metaRow.appendChild(homeSpan);
+    metaRow.appendChild(latestSpan);
+    // Place Home/Latest between the name row and the train bubbles
+    const trainBubbles = node.querySelector('.train-bubbles');
+    if (controlsEl && trainBubbles && controlsEl.contains(trainBubbles)) {
+      controlsEl.insertBefore(metaRow, trainBubbles);
+    } else if (headerEl && controlsEl && headerEl.contains(controlsEl)) {
+      headerEl.insertBefore(metaRow, controlsEl);
+    } else if (headerEl) {
+      headerEl.appendChild(metaRow);
+    }
+
     // Toolbar: color cycle
     const colorBtn = node.querySelector('.btn-color');
-    const applyAccent = () => colorBtn && colorBtn.style.setProperty('background', colorToken(player.color));
+    const applyAccent = () => {
+      if (colorBtn) {
+        colorBtn.style.setProperty('--swatch', colorToken(player.color));
+      }
+    };
     applyAccent();
     colorBtn.addEventListener('click', () => {
       const idx = (colorOptions.indexOf(player.color) + 1) % colorOptions.length;
@@ -216,13 +256,19 @@
     });
     updateBubbles();
 
-    node.querySelector('.btn-collapse').addEventListener('click', () => {
+    const collapseBtn = node.querySelector('.btn-collapse');
+    if (collapseBtn) {
+      collapseBtn.textContent = player.collapsed ? '+' : '−';
+      collapseBtn.addEventListener('click', () => {
       player.collapsed = !player.collapsed;
       saveState();
       render();
-    });
-    node.querySelector('.btn-up').addEventListener('click', () => movePlayer(index, -1));
-    node.querySelector('.btn-down').addEventListener('click', () => movePlayer(index, +1));
+      });
+    }
+    const upBtn = node.querySelector('.btn-up');
+    if (upBtn) { upBtn.textContent = '◀'; upBtn.addEventListener('click', () => movePlayer(index, -1)); }
+    const downBtn = node.querySelector('.btn-down');
+    if (downBtn) { downBtn.textContent = '▶'; downBtn.addEventListener('click', () => movePlayer(index, +1)); }
     node.querySelector('.btn-delete').addEventListener('click', () => deletePlayer(player.id));
 
     // Stops
@@ -231,6 +277,16 @@
     recomputeAllPayouts(player);
     player.stops.forEach((stop, stopIdx) => {
       const stopNode = renderStopItem(player, stop, stopIdx);
+      // Apply enter animation for very recent additions
+      if (stop._justAdded) {
+        stopNode.classList.add('enter');
+        requestAnimationFrame(() => {
+          stopNode.classList.add('enter-active');
+          stopNode.classList.remove('enter');
+          setTimeout(() => stopNode.classList.remove('enter-active'), 260);
+        });
+        delete stop._justAdded;
+      }
       stopsRoot.appendChild(stopNode);
     });
 
@@ -369,6 +425,7 @@
       const newStop = defaultStop();
       if (cityId) newStop.cityId = cityId;
       newStop.lastRollText = rollText;
+      newStop._justAdded = true;
       player.stops.unshift(newStop);
     }
     player._pendingRollText = '';
@@ -633,6 +690,43 @@
   function bindDragAndDrop() {
     const cards = Array.from(playersRoot.querySelectorAll('.player-card'));
     let dragId = null;
+
+    function captureCardRects() {
+      const rects = new Map();
+      Array.from(playersRoot.querySelectorAll('.player-card')).forEach((el) => {
+        rects.set(el.dataset.playerId, el.getBoundingClientRect());
+      });
+      return rects;
+    }
+
+    function animateReorder(prevRects) {
+      const newCards = Array.from(playersRoot.querySelectorAll('.player-card'));
+      newCards.forEach((el) => {
+        const id = el.dataset.playerId;
+        const prev = prevRects.get(id);
+        if (!prev) return;
+        const next = el.getBoundingClientRect();
+        const dx = prev.left - next.left;
+        const dy = prev.top - next.top;
+        if (dx === 0 && dy === 0) return;
+        // Set initial transform without transition
+        el.style.transition = 'none';
+        el.style.transform = `translate(${dx}px, ${dy}px)`;
+        // Double RAF to ensure initial state is committed before animating back to 0
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            el.style.transition = 'transform 250ms ease';
+            el.style.transform = 'translate(0,0)';
+            const cleanup = () => {
+              el.style.transition = '';
+              el.style.transform = '';
+              el.removeEventListener('transitionend', cleanup);
+            };
+            el.addEventListener('transitionend', cleanup);
+          });
+        });
+      });
+    }
     cards.forEach((card) => {
       card.addEventListener('dragstart', (e) => {
         dragId = card.dataset.playerId;
@@ -643,6 +737,7 @@
         e.preventDefault();
         const targetId = card.dataset.playerId;
         if (!dragId || dragId === targetId) return;
+        const prevRects = captureCardRects();
         const fromIdx = state.players.findIndex((p) => p.id === dragId);
         const toIdx = state.players.findIndex((p) => p.id === targetId);
         if (fromIdx < 0 || toIdx < 0) return;
@@ -650,6 +745,7 @@
         state.players.splice(toIdx, 0, p);
         saveState();
         render();
+        requestAnimationFrame(() => animateReorder(prevRects));
       });
     });
   }

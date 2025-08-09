@@ -98,14 +98,16 @@
     <template id="tpl-player-card">
       <article class="player-card" data-player-id="">
         <header class="player-header">
-          <input class="player-name" type="text" placeholder="Player name" aria-label="Player name" />
           <div class="player-controls" role="toolbar" aria-label="Player controls">
             <div class="player-toolbar" role="group" aria-label="Card toolbar">
-              <button class="icon-btn small btn-color" aria-label="Change color" title="Change color"></button>
+              <button class="icon-btn small btn-up" aria-label="Move player left" title="Move left">◀</button>
               <button class="icon-btn small btn-collapse" aria-expanded="true" aria-label="Collapse player" title="Collapse/Expand">▾</button>
-              <button class="icon-btn small btn-up" aria-label="Move player up" title="Move up">▲</button>
-              <button class="icon-btn small btn-down" aria-label="Move player down" title="Move down">▼</button>
               <button class="icon-btn small btn-delete" aria-label="Remove player" title="Delete player">🗑</button>
+              <button class="icon-btn small btn-down" aria-label="Move player right" title="Move right">▶</button>
+            </div>
+            <div class="player-name-row">
+              <button class="icon-btn small btn-color" aria-label="Change color" title="Change color"></button>
+              <input class="player-name" type="text" placeholder="Player name" aria-label="Player name" />
             </div>
             <div class="train-bubbles" role="radiogroup" aria-label="Train type">
               <label class="bubble" data-value="Standard">
