@@ -320,25 +320,15 @@
 
     const rollText = `${capitalize(oe1)}+${s1} → ${region}; ${capitalize(oe2)}+${s2} → ${cityName}.`;
 
-    // Propose: show in header, ask to accept
-    player._pendingRollText = rollText;
-    if (cardNode) {
-      const el = cardNode.querySelector('.last-roll');
-      if (el) el.textContent = rollText;
-    }
-    const accept = confirm(`${rollText}\n\nAdd this as the next stop?`);
-    if (accept) {
-      const newStop = defaultStop();
-      newStop.cityId = cityId;
-      newStop.lastRollText = rollText;
-      player.stops.unshift(newStop);
-      player._pendingRollText = '';
-      recomputeAllPayouts(player);
-      saveState();
-      render();
-    } else {
-      saveState();
-    }
+    // Automatically apply the rolled stop
+    const newStop = defaultStop();
+    newStop.cityId = cityId;
+    newStop.lastRollText = rollText;
+    player.stops.unshift(newStop);
+    player._pendingRollText = '';
+    recomputeAllPayouts(player);
+    saveState();
+    render();
   }
 
   function capitalize(s) { return s.charAt(0).toUpperCase() + s.slice(1); }

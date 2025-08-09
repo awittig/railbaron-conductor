@@ -82,8 +82,12 @@
           <span class="payout" aria-label="Payout"></span>
         </div>
         <div class="stop-actions" role="toolbar" aria-label="Stop actions">
-          <label title="Mark unreachable"><input type="checkbox" class="stop-unreachable" /> Unreachable</label>
-          <button class="btn subtle btn-delete-stop" aria-label="Delete stop">Delete</button>
+          <label class="icon-toggle" title="Mark unreachable">
+            <input type="checkbox" class="stop-unreachable" aria-label="Mark unreachable" />
+            <span class="icon" aria-hidden="true">⛔</span>
+            <span class="sr-only">Unreachable</span>
+          </label>
+          <button class="icon-btn small btn-delete-stop" aria-label="Delete stop" title="Delete stop">🗑</button>
         </div>
         <div class="stop-meta">
           <span class="roll-text"></span>

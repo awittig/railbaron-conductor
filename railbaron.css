@@ -27,9 +27,17 @@ html, body { height: 100%; }
 body {
   margin: 0;
   font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
-  background: radial-gradient(1000px 600px at 20% -10%, rgba(20,184,166,0.15), transparent 60%),
-              radial-gradient(1200px 700px at 110% -20%, rgba(139,92,246,0.15), transparent 60%),
-              var(--bg);
+  background:
+    radial-gradient(1000px 600px at 20% -10%, rgba(20,184,166,0.22), transparent 60%),
+    radial-gradient(1200px 700px at 110% -20%, rgba(139,92,246,0.18), transparent 60%),
+    radial-gradient(900px 600px at 50% 120%, rgba(244,63,94,0.12), transparent 60%),
+    linear-gradient(135deg,
+      rgba(20,184,166,0.12) 0%,
+      rgba(59,130,246,0.12) 35%,
+      rgba(139,92,246,0.12) 65%,
+      rgba(244,63,94,0.12) 100%
+    ),
+    var(--bg);
   color: var(--text);
 }
 
@@ -88,12 +96,13 @@ body {
 }
 .player-card .player-header {
   display: flex;
+  flex-direction: column;
   gap: 10px;
-  align-items: center;
+  align-items: stretch;
   padding: 12px;
 }
 .player-card .player-name {
-  flex: 1;
+  width: 100%;
   min-width: 0;
   font-size: 16px;
   padding: 10px 12px;
@@ -102,7 +111,7 @@ body {
   border: 1px solid var(--border);
   border-radius: 10px;
 }
-.player-controls { display: flex; gap: 8px; align-items: center; }
+.player-controls { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
 .player-controls select {
   background: #0e131a;
   color: var(--text);
@@ -138,6 +147,12 @@ body {
 .payout { font-weight: 600; color: var(--amber); min-width: 80px; text-align: right; }
 .stop-actions { display: flex; gap: 8px; align-items: center; margin-top: 8px; }
 .stop-actions .btn { padding: 6px 10px; }
+.stop-actions .icon-btn.small { padding: 4px 8px; border-radius: 8px; }
+.icon-toggle { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; user-select: none; }
+.icon-toggle input { display: none; }
+.icon-toggle .icon { font-size: 16px; line-height: 1; opacity: 0.6; transition: opacity .15s ease; }
+.stop.unreachable .icon-toggle .icon { opacity: 1; color: var(--rose); }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,1px,1px); white-space: nowrap; border: 0; }
 .stop-meta { color: var(--muted); font-size: 12px; margin-top: 6px; }
 
 .player-card.collapsed .stops { display: none; }
