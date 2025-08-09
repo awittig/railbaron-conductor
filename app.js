@@ -194,9 +194,16 @@
     const homeName = homeId ? (idToCity.get(homeId)?.name || null) : null;
     homeSpan.textContent = homeName ? `Home: ${homeName}` : '';
     // Latest destination (newest non-null city)
-    const latestStop = player.stops.find((s) => !!s.cityId);
+    const latestIdx = player.stops.findIndex((s) => !!s.cityId);
+    const latestStop = latestIdx >= 0 ? player.stops[latestIdx] : null;
     const latestName = latestStop?.cityId ? (idToCity.get(latestStop.cityId)?.name || null) : null;
-    latestSpan.textContent = latestName ? `Latest: ${latestName}` : '';
+    let payoutSuffix = '';
+    if (latestStop && latestStop.cityId) {
+      const prevId = player.stops[latestIdx + 1]?.cityId || null;
+      const amt = computePayout(prevId, latestStop.cityId);
+      if (amt != null) payoutSuffix = ` · ${formatCurrency(amt)}`;
+    }
+    latestSpan.textContent = latestName ? `Latest: ${latestName}${payoutSuffix}` : '';
     metaRow.appendChild(homeSpan);
     metaRow.appendChild(latestSpan);
     if (headerEl && controlsEl) headerEl.insertBefore(metaRow, controlsEl);
@@ -258,6 +265,16 @@
     recomputeAllPayouts(player);
     player.stops.forEach((stop, stopIdx) => {
       const stopNode = renderStopItem(player, stop, stopIdx);
+      // Apply enter animation for very recent additions
+      if (stop._justAdded) {
+        stopNode.classList.add('enter');
+        requestAnimationFrame(() => {
+          stopNode.classList.add('enter-active');
+          stopNode.classList.remove('enter');
+          setTimeout(() => stopNode.classList.remove('enter-active'), 260);
+        });
+        delete stop._justAdded;
+      }
       stopsRoot.appendChild(stopNode);
     });
 
@@ -396,6 +413,7 @@
       const newStop = defaultStop();
       if (cityId) newStop.cityId = cityId;
       newStop.lastRollText = rollText;
+      newStop._justAdded = true;
       player.stops.unshift(newStop);
     }
     player._pendingRollText = '';
