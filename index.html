@@ -1,50 +1,161 @@
 <!DOCTYPE html>
-<html ng-app="railbaron">
-<head lang="en">
-    <meta charset="UTF-8">
-    <title></title>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Rail Baron / Boxcars Conductor</title>
+    <link rel="stylesheet" href="railbaron.css" />
+  </head>
+  <body>
+    <header class="app-header" role="banner">
+      <h1>Boxcars Conductor</h1>
+      <div class="global-actions" role="toolbar" aria-label="Global actions">
+        <button id="btn-stats" class="btn" title="View Stats" aria-label="View statistics">Stats</button>
+        <button id="btn-export" class="btn" title="Export JSON" aria-label="Export game state">Export</button>
+        <label class="btn file-btn" title="Import JSON" aria-label="Import game state">
+          Import
+          <input id="file-import" type="file" accept="application/json" />
+        </label>
+        <button id="btn-new" class="btn danger" title="New Game" aria-label="Start a new game">New Game</button>
+      </div>
+    </header>
 
-	<link rel="stylesheet" type="text/css" href="railbaron.css">
-    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.10/angular.min.js"></script>
-    <script src="payouts.js"></script>
-    <script src="railbaron-app.js"></script>
-    <style>
-    </style>
-</head>
-<body ng-controller="RailbaronController as ctrl">
+    <main id="app" class="app" role="main">
+      <section class="players-toolbar">
+        <button id="btn-add-player" class="btn primary" aria-label="Add player">Add Player</button>
+      </section>
+      <section id="players" class="players" aria-live="polite"></section>
+    </main>
 
-<div class="allPlayers">
-    <div class="player {{ctrl.playerColors[player.color]}}" ng-repeat="player in ctrl.players track by $index">
+    <dialog id="stats-dialog" class="modal" aria-label="Statistics">
+      <form method="dialog">
+        <header class="modal-header">
+          <h2>Statistics</h2>
+          <button id="btn-close-stats" class="icon-btn" aria-label="Close">✕</button>
+        </header>
+        <section class="modal-body">
+          <div class="stats-controls">
+            <label>
+              <input type="checkbox" id="toggle-include-unreachable" />
+              Include unreachable legs
+            </label>
+            <button id="btn-export-csv" class="btn" aria-label="Export CSV">Export CSV</button>
+          </div>
+          <div id="stats-table-wrap"></div>
+        </section>
+      </form>
+    </dialog>
 
-        <div class="playerColor">
-            <div class="{{ctrl.playerColors[player.color]}}" style="display:block" ng-click="ctrl.cycleColor(player)"></div>
-        </div>
-        <input ng-model="player.name" type="text" class="playerName" ng-change="ctrl.persist()"/>
+    <dialog id="region-dialog" class="modal" aria-label="Choose Region">
+      <form method="dialog">
+        <header class="modal-header">
+          <h2>Choose Region</h2>
+          <button id="btn-close-region" class="icon-btn" aria-label="Close">✕</button>
+        </header>
+        <section class="modal-body">
+          <p class="muted">You rolled the same region as your current location. Choose any region instead.</p>
+          <div id="region-options" class="region-options" role="radiogroup" aria-label="Regions"></div>
+          <div style="margin-top:12px; display:flex; gap:8px; justify-content:flex-end;">
+            <button id="btn-region-confirm" class="btn primary" aria-label="Use selected region">Use Selected</button>
+          </div>
+        </section>
+      </form>
+    </dialog>
 
-        <div class="addDestination button" ng-click="ctrl.addDestination(player)">+</div>
-        <div class="trip" ng-repeat="destination in player.destinations track by $index">
-            <select ng-model="player.destinations[$index]"
-                    ng-options="city as city.name for city in ctrl.allCities"
-                    ng-change="ctrl.persist()"
-                    class="destinations">
-            </select>
-            <div class="payout {{destination.status}}" ng-click="ctrl.markUnreachable(player, $index)">
-                {{ctrl.calculatePayout(player, $index)}}
+    <dialog id="map-dialog" class="modal" aria-label="Select Map">
+      <form method="dialog">
+        <header class="modal-header">
+          <h2>Select Map</h2>
+          <button id="btn-close-map" class="icon-btn" aria-label="Close">✕</button>
+        </header>
+        <section class="modal-body">
+          <p class="muted">Choose which Boxcars/ Rail Baron map to use for this game.</p>
+          <div id="map-options" class="map-options" role="radiogroup" aria-label="Map options">
+            <label class="map-card" data-value="US" title="United States">
+              <input type="radio" name="map" value="US" />
+              <div class="map-flag" aria-hidden="true">🇺🇸</div>
+              <div class="map-text">
+                <div class="map-title">America</div>
+                <div class="map-sub">28 US rail companies</div>
+              </div>
+            </label>
+            <label class="map-card" data-value="GB" title="Great Britain">
+              <input type="radio" name="map" value="GB" />
+              <div class="map-flag" aria-hidden="true">🇬🇧</div>
+              <div class="map-text">
+                <div class="map-title">Great Britain</div>
+                <div class="map-sub">England • Scotland • Wales</div>
+              </div>
+            </label>
+          </div>
+          <div style="margin-top:12px; display:flex; gap:8px; justify-content:flex-end;">
+            <button id="btn-map-confirm" class="btn primary" aria-label="Use selected map">Use Selected</button>
+          </div>
+        </section>
+      </form>
+    </dialog>
+
+    <template id="tpl-player-card">
+      <article class="player-card" data-player-id="">
+        <header class="player-header">
+          <input class="player-name" type="text" placeholder="Player name" aria-label="Player name" />
+          <div class="player-controls" role="toolbar" aria-label="Player controls">
+            <div class="player-toolbar" role="group" aria-label="Card toolbar">
+              <button class="icon-btn small btn-color" aria-label="Change color" title="Change color"></button>
+              <button class="icon-btn small btn-collapse" aria-expanded="true" aria-label="Collapse player" title="Collapse/Expand">▾</button>
+              <button class="icon-btn small btn-up" aria-label="Move player up" title="Move up">▲</button>
+              <button class="icon-btn small btn-down" aria-label="Move player down" title="Move down">▼</button>
+              <button class="icon-btn small btn-delete" aria-label="Remove player" title="Delete player">🗑</button>
             </div>
+            <div class="train-bubbles" role="radiogroup" aria-label="Train type">
+              <label class="bubble" data-value="Standard">
+                <input type="radio" value="Standard" />
+                <span>Standard</span>
+              </label>
+              <label class="bubble" data-value="Express">
+                <input type="radio" value="Express" />
+                <span>Express</span>
+              </label>
+              <label class="bubble" data-value="Super Chief">
+                <input type="radio" value="Super Chief" />
+                <span>Super Chief</span>
+              </label>
+            </div>
+          </div>
+        </header>
+        <section class="stops" aria-label="Stops list">
+          <div class="stops-toolbar">
+            <button class="btn primary btn-add-stop" aria-label="Add stop">Add Stop</button>
+            <button class="btn btn-roll-stop" aria-label="Roll destination">Roll Stop</button>
+          </div>
+          <ul class="stop-list"></ul>
+        </section>
+      </article>
+    </template>
+
+    <template id="tpl-stop-item">
+      <li class="stop" data-stop-index="">
+        <div class="stop-main">
+          <select class="stop-city" aria-label="City select"></select>
+          <span class="payout" aria-label="Payout"></span>
         </div>
-    </div>
-</div>
-<div id="controls">
-    <div class="control" ng-click="ctrl.addPlayer()">add player</div>
-    <div class="control" ng-click="ctrl.newGame()">new game</div>
-</div>
-<script>
-  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
-  ga('create', 'UA-63893121-1', 'auto');
-  ga('send', 'pageview');
-</script>
-</body>
-</html>
+        <div class="stop-actions" role="toolbar" aria-label="Stop actions">
+          <label class="icon-toggle" title="Mark unreachable">
+            <input type="checkbox" class="stop-unreachable" aria-label="Mark unreachable" />
+            <span class="icon" aria-hidden="true">⛔</span>
+            <span class="sr-only">Unreachable</span>
+          </label>
+          <button class="icon-btn small btn-delete-stop" aria-label="Delete stop" title="Delete stop">🗑</button>
+        </div>
+        <div class="stop-meta">
+          <span class="roll-text"></span>
+        </div>
+      </li>
+    </template>
+
+    <script src="payouts.js"></script>
+    <script src="boxcars-tables.js"></script>
+    <script src="boxcars-britain-tables.js"></script>
+    <script src="app.js"></script>
+  </body>
+  </html>
