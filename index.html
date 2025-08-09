@@ -62,6 +62,39 @@
       </form>
     </dialog>
 
+    <dialog id="map-dialog" class="modal" aria-label="Select Map">
+      <form method="dialog">
+        <header class="modal-header">
+          <h2>Select Map</h2>
+          <button id="btn-close-map" class="icon-btn" aria-label="Close">✕</button>
+        </header>
+        <section class="modal-body">
+          <p class="muted">Choose which Boxcars/ Rail Baron map to use for this game.</p>
+          <div id="map-options" class="map-options" role="radiogroup" aria-label="Map options">
+            <label class="map-card" data-value="US" title="United States">
+              <input type="radio" name="map" value="US" />
+              <div class="map-flag" aria-hidden="true">🇺🇸</div>
+              <div class="map-text">
+                <div class="map-title">America</div>
+                <div class="map-sub">28 US rail companies</div>
+              </div>
+            </label>
+            <label class="map-card" data-value="GB" title="Great Britain">
+              <input type="radio" name="map" value="GB" />
+              <div class="map-flag" aria-hidden="true">🇬🇧</div>
+              <div class="map-text">
+                <div class="map-title">Great Britain</div>
+                <div class="map-sub">England • Scotland • Wales</div>
+              </div>
+            </label>
+          </div>
+          <div style="margin-top:12px; display:flex; gap:8px; justify-content:flex-end;">
+            <button id="btn-map-confirm" class="btn primary" aria-label="Use selected map">Use Selected</button>
+          </div>
+        </section>
+      </form>
+    </dialog>
+
     <template id="tpl-player-card">
       <article class="player-card" data-player-id="">
         <header class="player-header">

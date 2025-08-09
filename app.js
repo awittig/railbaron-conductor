@@ -552,11 +552,11 @@
 
   function newGame() {
     if (!confirm('Start a new game? This will clear all players and stops.')) return;
-    const choice = prompt('Select map: type US for America or GB for Great Britain', state.settings.map || 'US');
-    const map = (choice && choice.toUpperCase() === 'GB') ? 'GB' : 'US';
-    state = { players: [], settings: { map } };
-    saveState();
-    render();
+    showMapDialog(state.settings.map || 'US').then((map) => {
+      state = { players: [], settings: { map } };
+      saveState();
+      render();
+    }).catch(() => {/* noop on cancel */});
   }
 
   // ----- Global controls -----
@@ -627,6 +627,56 @@
     });
   }
 
+  // Map selection dialog
+  function showMapDialog(defaultMap) {
+    const dialog = document.getElementById('map-dialog');
+    const options = document.getElementById('map-options');
+    const closeBtn = document.getElementById('btn-close-map');
+    const confirmBtn = document.getElementById('btn-map-confirm');
+    if (!dialog || !options) return Promise.resolve(defaultMap);
+
+    return new Promise((resolve, reject) => {
+      let selected = (defaultMap === 'GB') ? 'GB' : 'US';
+      options.querySelectorAll('.map-card').forEach((el) => {
+        const val = el.dataset.value;
+        const input = el.querySelector('input[type="radio"]');
+        if (input) input.checked = (val === selected);
+        el.dataset.checked = (val === selected) ? 'true' : 'false';
+        el.addEventListener('click', () => {
+          selected = val;
+          update();
+        });
+      });
+      function update() {
+        options.querySelectorAll('.map-card').forEach((el) => {
+          const val = el.dataset.value;
+          el.dataset.checked = (val === selected) ? 'true' : 'false';
+          const input = el.querySelector('input[type="radio"]');
+          if (input) input.checked = (val === selected);
+        });
+      }
+
+      function onConfirm(e) { e.preventDefault(); cleanup(); dialog.close(); resolve(selected); }
+      function onClose() { cleanup(); dialog.close(); reject(); }
+      function onBackdrop(e) {
+        const rect = dialog.getBoundingClientRect();
+        const inside = e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.top && e.clientY <= rect.bottom;
+        if (!inside) { onClose(); }
+      }
+
+      confirmBtn.addEventListener('click', onConfirm);
+      closeBtn.addEventListener('click', onClose);
+      dialog.addEventListener('click', onBackdrop);
+      dialog.showModal();
+
+      function cleanup() {
+        confirmBtn.removeEventListener('click', onConfirm);
+        closeBtn.removeEventListener('click', onClose);
+        dialog.removeEventListener('click', onBackdrop);
+      }
+    });
+  }
+
   // ----- Init -----
   function ensureDefaultPlayers() {
     if (state.players.length === 0) {
@@ -636,6 +686,14 @@
   }
 
   loadState();
+  // If first load (no players) show map select once
+  if (!localStorage.getItem(STORAGE_KEY)) {
+    showMapDialog(state.settings.map || 'US').then((map) => {
+      state.settings.map = map;
+      saveState();
+      render();
+    });
+  }
   ensureDefaultPlayers();
   bindGlobalControls();
   render();

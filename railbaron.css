@@ -211,6 +211,16 @@ body {
 .region-options .region input { display: none; }
 .region-options .region[data-checked="true"], .region-options .region:has(input:checked) { outline: 2px solid var(--accent, var(--blue)); background: #0b0f14; }
 
+/* Map selection */
+.map-options { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; margin-top: 12px; }
+.map-card { display: grid; grid-template-columns: 52px 1fr; align-items: center; gap: 12px; padding: 12px; border-radius: 14px; border: 1px solid var(--border); background: #0e131a; cursor: pointer; box-shadow: var(--shadow); }
+.map-card input { display: none; }
+.map-card .map-flag { font-size: 36px; filter: drop-shadow(0 1px 0 rgba(0,0,0,.35)); }
+.map-card .map-title { font-weight: 700; }
+.map-card .map-sub { color: var(--muted); font-size: 12px; }
+.map-card:hover { border-color: color-mix(in srgb, var(--accent, var(--blue)) 35%, var(--border)); }
+.map-card[data-checked="true"], .map-card:has(input:checked) { outline: 2px solid var(--accent, var(--blue)); background: #0b0f14; }
+
 @media (max-width: 900px) {
   .players { grid-template-columns: 1fr; }
 }
