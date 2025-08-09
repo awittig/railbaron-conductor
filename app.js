@@ -146,6 +146,7 @@
     node.dataset.playerId = player.id;
     node.classList.toggle('collapsed', !!player.collapsed);
     node.style.setProperty('--accent', colorToken(player.color));
+    node.dataset.color = player.color;
     node.setAttribute('draggable', 'true');
 
     const nameInput = node.querySelector('.player-name');
@@ -163,6 +164,7 @@
       const idx = (colorOptions.indexOf(player.color) + 1) % colorOptions.length;
       player.color = colorOptions[idx];
       node.style.setProperty('--accent', colorToken(player.color));
+      node.dataset.color = player.color;
       applyAccent();
       saveState();
     });

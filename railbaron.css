@@ -89,12 +89,33 @@ body {
 }
 
 .player-card {
-  background: var(--panel);
+  background:
+    linear-gradient(180deg,
+      color-mix(in srgb, var(--accent, var(--black)) 18%, var(--panel)) 0%,
+      var(--panel) 65%
+    );
   border: 2px solid var(--accent, var(--black));
   border-radius: 14px;
   box-shadow: var(--shadow);
   overflow: hidden;
 }
+.player-card[data-color="white"] {
+  background:
+    linear-gradient(180deg,
+      color-mix(in srgb, var(--accent, var(--white)) 12%, var(--panel)) 0%,
+      var(--panel) 65%
+    );
+}
+.player-card[data-color="black"] {
+  background:
+    linear-gradient(180deg,
+      color-mix(in srgb, var(--accent, var(--black)) 10%, var(--panel)) 0%,
+      var(--panel) 65%
+    );
+}
+.player-card[data-color="black"] .player-name { color: #f3f4f6; }
+.player-card[data-color="black"] { border-color: #374151; }
+.player-card[data-color="white"] .player-name { color: #e5e7eb; }
 .player-card .player-header {
   display: flex;
   flex-direction: column;
