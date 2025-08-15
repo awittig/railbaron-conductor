@@ -75,10 +75,22 @@ body {
   line-height: 1;
   display: inline-flex;
   align-items: center;
+  text-decoration: none;
 }
 .btn.primary { background: var(--panel); border-color: color-mix(in srgb, var(--blue) 50%, var(--border)); color: var(--text); }
 .btn.danger { border-color: color-mix(in srgb, var(--rose) 50%, var(--border)); }
 .btn.subtle { background: transparent; }
+.btn.github-btn { 
+  background: linear-gradient(135deg, var(--violet), var(--blue));
+  border-color: color-mix(in srgb, var(--violet) 50%, var(--border));
+  color: var(--white);
+  transition: all 0.2s ease;
+}
+.btn.github-btn:hover {
+  background: linear-gradient(135deg, var(--purple), var(--violet));
+  transform: translateY(-1px);
+  box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);
+}
 .file-btn { position: relative; overflow: hidden; }
 .file-btn input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; font-size: 0; }
 .icon-btn { padding: 6px 10px; }
@@ -265,38 +277,7 @@ body {
   .players { grid-template-columns: 1fr; }
 }
 
-/* Footer styles */
-.app-footer {
-  margin-top: 40px;
-  padding: 20px;
-  text-align: center;
-  border-top: 1px solid var(--border);
-  background: linear-gradient(180deg, rgba(31,41,55,0.3), rgba(18,24,33,0.3));
-}
-
-.github-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 12px 20px;
-  background: linear-gradient(135deg, var(--violet), var(--blue));
-  color: var(--white);
-  text-decoration: none;
-  border-radius: 12px;
-  font-weight: 600;
-  font-size: 14px;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);
-  border: 1px solid rgba(139, 92, 246, 0.4);
-}
-
-.github-link:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(139, 92, 246, 0.4);
-  background: linear-gradient(135deg, var(--purple), var(--violet));
-}
-
 .github-icon {
-  font-size: 18px;
-  filter: drop-shadow(0 1px 2px rgba(0,0,0,0.3));
+  font-size: 14px;
+  margin-right: 4px;
 }
