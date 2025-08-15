@@ -14,36 +14,7 @@
     "Southwest",
   ];
 
-  // Region selection table: odd/even + 2..12
-  // This distributes results across the seven regions in a balanced fashion.
-  const REGION_ROLL_TABLE = {
-    odd: {
-      2: "Northeast",
-      3: "Northeast",
-      4: "North Central",
-      5: "Southeast",
-      6: "South Central",
-      7: "Plains",
-      8: "Northwest",
-      9: "Southwest",
-      10: "North Central",
-      11: "Southeast",
-      12: "Northeast",
-    },
-    even: {
-      2: "North Central",
-      3: "Southeast",
-      4: "South Central",
-      5: "Plains",
-      6: "Northwest",
-      7: "Southwest",
-      8: "Northeast",
-      9: "North Central",
-      10: "Southeast",
-      11: "Plains",
-      12: "Southwest",
-    },
-  };
+  // Region selection uses destinationTable.regionChart (official table)
 
   // City groups by region using ids from payouts.js `cities` list
   const CITY_IDS_BY_REGION = {
@@ -368,7 +339,6 @@
   // Export globals
   window.BOXCARS = {
     REGIONS,
-    REGION_ROLL_TABLE,
     CITY_IDS_BY_REGION,
     destinationTable,
     rollOddEven: oddEven,

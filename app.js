@@ -318,7 +318,7 @@
     for (const c of enrichedCities) {
       const opt = document.createElement('option');
       opt.value = String(c.id);
-      opt.textContent = `${c.name} (${c.region})`;
+      opt.textContent = c.name;
       if (stop.cityId === c.id) opt.selected = true;
       citySelect.appendChild(opt);
     }

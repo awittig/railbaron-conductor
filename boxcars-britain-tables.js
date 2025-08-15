@@ -370,7 +370,7 @@ const destinationTableGB = {
       "Ipswich",
       "Keith",
       "Kilmarnock",
-      "King’s Lynn",
+      "King's Lynn",
       "Kyle of Lochalsh",
       "Lancaster",
       "Leeds",
@@ -521,7 +521,7 @@ const destinationTableGB = {
       [21,5,6,3,14,7,7,14,4,4,3,19,11,12,6,10,12,8,7,9,12,7,9,11,12,3,2,17,9,5,7,130,11,17,14,130,20,23,15,7,10,9,15,12,5,9,9,20,12,21,14,11,124,5,6,6,18,2,3,9,122,4,19,11,19,13,6,19,17,17,13,19,116,9,16,12,18,5,10,10,16,2,11,11,14,16,14,5,18,8,7,11,113,9,28,11,15,0,14,8],
       [28,19,9,17,18,15,7,18,10,13,16,26,6,14,16,15,10,14,17,5,10,14,16,9,4,13,13,24,13,10,9,11,18,24,21,16,27,30,22,12,18,9,22,10,114,7,11,27,13,28,21,4,131,14,11,9,17,14,16,7,129,12,26,15,119,1,9,26,110,20,20,22,123,6,19,11,19,9,12,13,110,12,12,7,111,23,21,10,116,11,15,9,115,17,35,11,112,14,0,11],
       [17,12,68,10,18,6,9,7,7,4,11,15,7,15,130,14,14,12,14,68,14,130,6,130,12,9,6,14,2,5,2,15,68,130,10,17,117,19,11,10,5,11,11,14,11,10,2,16,11,17,10,7,20,5,2,6,4,6,10,11,119,4,15,4,116,10,5,16,9,21,9,23,12,7,20,14,110,7,13,2,3,68,13,13,7,12,10,8,115,11,45,13,117,68,24,12,19,68,11,0]
-    ]
+     ]
   };
   // Expose GB payoff table globally (optional)
   if (typeof window !== 'undefined') {
@@ -539,8 +539,8 @@ const destinationTableGB = {
       return String(s)
         .toLowerCase()
         .trim()
-        .replace(/[’‘]/g, "'")
-        .replace(/[“”]/g, '"')
+        .replace(/['’]/g, "'")
+        .replace(/[""]/g, '"')
         .replace(/\s+/g, ' ');
     }
     for (const c of CITIES) {
@@ -589,3 +589,217 @@ const destinationTableGB = {
       };
     }
   })();
+
+  // Validation function to check for OCR errors in the payoff table
+  function validatePayoffTable(options) {
+    const opts = options || {};
+    const printCorrect = typeof opts.printCorrect === 'boolean' ? opts.printCorrect : true;
+    const correctLimit = typeof opts.correctLimit === 'number' ? opts.correctLimit : 50;
+
+    const table = (typeof payoffTableGB !== 'undefined' && payoffTableGB && Array.isArray(payoffTableGB.matrix))
+      ? payoffTableGB.matrix
+      : null;
+    const cities = (typeof payoffTableGB !== 'undefined' && payoffTableGB && Array.isArray(payoffTableGB.cities))
+      ? payoffTableGB.cities
+      : [];
+    const errors = [];
+    const successes = [];
+
+    console.log("Validating payoff table...");
+
+    if (!table) {
+      console.error("Payoff table not available or not an array.");
+      return ["Payoff table not available or not an array."];
+    }
+
+    const nRows = table.length;
+    const nCities = cities.length;
+    if (nRows !== nCities) {
+      errors.push(`Matrix height (${nRows}) does not match number of cities (${nCities})`);
+    }
+
+    // Check each row length matches number of cities
+    for (let i = 0; i < nRows; i++) {
+      const row = table[i];
+      if (!Array.isArray(row)) {
+        errors.push(`Row ${i} (${cities[i] || 'UNKNOWN'}) is not an array`);
+        continue;
+      }
+      if (row.length !== nCities) {
+        errors.push(`Row ${i} (${cities[i] || 'UNKNOWN'}) length ${row.length} != number of cities ${nCities}`);
+      }
+    }
+
+    const N = Math.min(nRows, nCities);
+    let countDiagonalOK = 0;
+    let countSymmetricOK = 0;
+    let countDigitsOK = 0;
+    const totalCells = N * N;
+    const totalPairs = (N * (N - 1)) / 2;
+    for (let i = 0; i < N; i++) {
+      const rowI = Array.isArray(table[i]) ? table[i] : [];
+      for (let j = i; j < N; j++) {
+        const rowJ = Array.isArray(table[j]) ? table[j] : [];
+        const valueIJ = rowI[j];
+        const valueJI = rowJ[i];
+
+        // Skip when both undefined (already reported via row length errors)
+        if (typeof valueIJ === 'undefined') {
+          errors.push(`Missing entry [${i},${j}] (${cities[i] || 'UNKNOWN'} to ${cities[j] || 'UNKNOWN'})`);
+          continue;
+        }
+
+        const numIJ = Number(valueIJ);
+        if (!Number.isFinite(numIJ)) {
+          errors.push(`Non-numeric entry [${i},${j}] (${cities[i] || 'UNKNOWN'} to ${cities[j] || 'UNKNOWN'}): ${valueIJ}`);
+          continue;
+        }
+
+        // Check diagonal should be 0
+        if (i === j) {
+          if (numIJ !== 0) {
+            errors.push(`Diagonal entry [${i},${j}] (${cities[i] || 'UNKNOWN'}) should be 0, but is ${numIJ}`);
+          } else {
+            countDiagonalOK++;
+            if (printCorrect) successes.push(`Diagonal OK [${i},${j}] (${cities[i] || 'UNKNOWN'}) = 0`);
+          }
+        }
+
+        // Check 2-digit limit for IJ
+        // if (numIJ > 99) {
+        //   errors.push(`Entry [${i},${j}] (${cities[i] || 'UNKNOWN'} to ${cities[j] || 'UNKNOWN'}) exceeds 2 digits: ${numIJ}`);
+        // } else {
+        //   countDigitsOK++;
+        //   if (printCorrect) successes.push(`Within 2 digits OK [${i},${j}] (${cities[i] || 'UNKNOWN'}→${cities[j] || 'UNKNOWN'}) = ${numIJ}`);
+        // }
+
+        // Symmetry check only for off-diagonal pairs and when counterpart exists
+        if (i !== j) {
+          if (typeof valueJI === 'undefined') {
+            errors.push(`Missing counterpart [${j},${i}] for [${i},${j}] (${cities[j] || 'UNKNOWN'} to ${cities[i] || 'UNKNOWN'})`);
+          } else {
+            const numJI = Number(valueJI);
+            if (!Number.isFinite(numJI)) {
+              errors.push(`Non-numeric counterpart [${j},${i}] (${cities[j] || 'UNKNOWN'} to ${cities[i] || 'UNKNOWN'}): ${valueJI}`);
+            } else if (numIJ !== numJI) {
+              errors.push(`Asymmetry at [${i},${j}] vs [${j},${i}]: ${cities[i] || 'UNKNOWN'}↔${cities[j] || 'UNKNOWN'} = ${numIJ} vs ${numJI}`);
+            } else {
+              countSymmetricOK++;
+              if (printCorrect) successes.push(`Symmetry OK [${i},${j}] and [${j},${i}] (${cities[i] || 'UNKNOWN'}↔${cities[j] || 'UNKNOWN'}) = ${numIJ}`);
+            }
+          }
+        }
+      }
+    }
+
+    // Summary
+    console.log(`OK summary: diagonals ${countDiagonalOK}/${N}, symmetric pairs ${countSymmetricOK}/${totalPairs}, values within 2 digits ${countDigitsOK}/${totalCells}`);
+
+    // Print successes (limited)
+    if (printCorrect && successes.length) {
+      const toShow = Number.isFinite(correctLimit) ? Math.min(successes.length, correctLimit) : successes.length;
+      for (let k = 0; k < toShow; k++) console.log(`  ✓ ${successes[k]}`);
+      if (toShow < successes.length) {
+        console.log(`  ... and ${successes.length - toShow} more correct entries not shown (pass { printCorrect: true, correctLimit: Infinity } to show all).`);
+      }
+    }
+
+    if (errors.length === 0) {
+      console.log("✅ Payoff table validation passed - no errors found!");
+    } else {
+      console.log(`❌ Payoff table validation failed - ${errors.length} problems found:`);
+      errors.forEach((e) => console.log(`  - ${e}`));
+    }
+
+    return errors;
+  }
+
+  // Propose a symmetrized, two-digit-corrected matrix without modifying the source
+  function generateCorrectedMatrix() {
+    const table = (typeof payoffTableGB !== 'undefined' && payoffTableGB && Array.isArray(payoffTableGB.matrix))
+      ? payoffTableGB.matrix
+      : null;
+    const cities = (typeof payoffTableGB !== 'undefined' && payoffTableGB && Array.isArray(payoffTableGB.cities))
+      ? payoffTableGB.cities
+      : [];
+    if (!table || !cities.length) {
+      console.error('Cannot generate corrected matrix: payoffTableGB not available');
+      return null;
+    }
+
+    const n = Math.min(table.length, cities.length);
+
+    function toTwoDigits(value) {
+      const num = Number(value);
+      if (!Number.isFinite(num)) return null;
+      const abs = Math.abs(Math.trunc(num));
+      return abs % 100; // keep last two digits
+    }
+
+    function chooseSymmetricValue(a, b) {
+      const aa = toTwoDigits(a);
+      const bb = toTwoDigits(b);
+      if (aa === null && bb === null) return 0;
+      if (aa === null) return bb;
+      if (bb === null) return aa;
+      if (aa === bb) return aa;
+      // If original numbers are equal but >99, normalize to last two digits (already handled by aa===bb)
+      // Otherwise, prefer the smaller plausible two-digit value
+      return Math.min(aa, bb);
+    }
+
+    const corrected = Array.from({ length: n }, () => Array(n).fill(0));
+    let changedPairs = 0;
+    for (let i = 0; i < n; i++) {
+      for (let j = i; j < n; j++) {
+        const chosen = (i === j) ? 0 : chooseSymmetricValue(table[i]?.[j], table[j]?.[i]);
+        const origIJ = Number(table[i]?.[j]);
+        const origJI = Number(table[j]?.[i]);
+        corrected[i][j] = chosen;
+        corrected[j][i] = chosen;
+        if (i !== j) {
+          const normIJ = isFinite(origIJ) ? (Math.abs(Math.trunc(origIJ)) % 100) : null;
+          const normJI = isFinite(origJI) ? (Math.abs(Math.trunc(origJI)) % 100) : null;
+          if (normIJ !== chosen || normJI !== chosen) changedPairs++;
+        }
+      }
+    }
+
+    console.log(`Proposed corrected matrix built. Changed symmetric pairs: ${changedPairs}`);
+    return corrected;
+  }
+
+  function formatMatrixForPaste(matrix) {
+    if (!Array.isArray(matrix)) return '';
+    const rows = matrix.map((row) => `      [${row.join(',')}]`).join(',\n');
+    return `    matrix: [\n${rows}\n    ]`;
+  }
+
+  // Convenience helper: print corrected matrix (optionally copy to clipboard)
+  function printCorrectedMatrix(options) {
+    const opts = options || {};
+    const copyToClipboard = !!opts.copyToClipboard;
+    const corrected = generateCorrectedMatrix();
+    if (!corrected) return null;
+    const formatted = formatMatrixForPaste(corrected);
+    console.log('------ BEGIN CORRECTED MATRIX (paste into payoffTableGB) ------');
+    console.log(formatted);
+    console.log('------- END CORRECTED MATRIX ---------------------------------');
+    if (copyToClipboard && typeof navigator !== 'undefined' && navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(formatted).then(() => {
+        console.log('Copied corrected matrix to clipboard');
+      }).catch(() => {});
+    }
+    return corrected;
+  }
+
+  // Auto-run validation when script loads
+  if (typeof window !== 'undefined') {
+    // Add validation function to the exported object
+    if (window.BOXCARS_GB) {
+      window.BOXCARS_GB.validatePayoffTable = validatePayoffTable;
+    }
+    
+        // Run validation
+    validatePayoffTable();
+  }
