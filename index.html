@@ -98,6 +98,22 @@
       </form>
     </dialog>
 
+    <dialog id="home-city-dialog" class="modal" aria-label="Choose Home City">
+      <form method="dialog">
+        <header class="modal-header">
+          <h2>Choose Home City</h2>
+          <button id="btn-close-home-city" class="icon-btn" aria-label="Close">✕</button>
+        </header>
+        <section class="modal-body">
+          <p class="muted">You rolled <span id="home-city-region"></span>. Choose any city in this region as your home city.</p>
+          <div id="home-city-options" class="home-city-options" role="radiogroup" aria-label="Home city options"></div>
+          <div style="margin-top:12px; display:flex; gap:8px; justify-content:flex-end;">
+            <button id="btn-home-city-confirm" class="btn primary" aria-label="Use selected city">Use Selected</button>
+          </div>
+        </section>
+      </form>
+    </dialog>
+
     <template id="tpl-player-card">
       <article class="player-card" data-player-id="">
         <header class="player-header">

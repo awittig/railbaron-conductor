@@ -169,6 +169,7 @@
     const node = tplPlayerCard.content.firstElementChild.cloneNode(true);
     node.dataset.playerId = player.id;
     node.classList.toggle('collapsed', !!player.collapsed);
+    node.classList.toggle('selecting-home-city', !player.stops.some(s => s.cityId));
     node.style.setProperty('--accent', colorToken(player.color));
     node.dataset.color = player.color;
     node.setAttribute('draggable', 'true');
@@ -189,21 +190,33 @@
     homeSpan.className = 'home-city';
     const latestSpan = document.createElement('span');
     latestSpan.className = 'latest-dest';
-    // Home city (oldest non-null city is home)
-    const homeId = player.homeCityId || null;
-    const homeName = homeId ? (idToCity.get(homeId)?.name || null) : null;
-    homeSpan.textContent = homeName ? `Home: ${homeName}` : '';
-    // Latest destination (newest non-null city)
-    const latestIdx = player.stops.findIndex((s) => !!s.cityId);
-    const latestStop = latestIdx >= 0 ? player.stops[latestIdx] : null;
-    const latestName = latestStop?.cityId ? (idToCity.get(latestStop.cityId)?.name || null) : null;
-    let payoutSuffix = '';
-    if (latestStop && latestStop.cityId) {
-      const prevId = player.stops[latestIdx + 1]?.cityId || null;
-      const amt = computePayout(prevId, latestStop.cityId);
-      if (amt != null) payoutSuffix = ` · ${formatCurrency(amt)}`;
+    
+    // Check if player has a home city
+    const hasHomeCity = player.stops.some(s => s.cityId);
+    
+    if (!hasHomeCity) {
+      // Player is selecting home city
+      homeSpan.textContent = 'Click "Roll Home City" to start';
+      homeSpan.className = 'home-city selecting';
+      latestSpan.textContent = '';
+    } else {
+      // Player has home city - show normal info
+      // Home city (oldest non-null city is home)
+      const homeId = player.homeCityId || null;
+      const homeName = homeId ? (idToCity.get(homeId)?.name || null) : null;
+      homeSpan.textContent = homeName ? `Home: ${homeName}` : '';
+      // Latest destination (newest non-null city)
+      const latestIdx = player.stops.findIndex((s) => !!s.cityId);
+      const latestStop = latestIdx >= 0 ? player.stops[latestIdx] : null;
+      const latestName = latestStop?.cityId ? (idToCity.get(latestStop.cityId)?.name || null) : null;
+      let payoutSuffix = '';
+      if (latestStop && latestStop.cityId) {
+        const prevId = player.stops[latestIdx + 1]?.cityId || null;
+        const amt = computePayout(prevId, latestStop.cityId);
+        if (amt != null) payoutSuffix = ` · ${formatCurrency(amt)}`;
+      }
+      latestSpan.textContent = latestName ? `Latest: ${latestName}${payoutSuffix}` : '';
     }
-    latestSpan.textContent = latestName ? `Latest: ${latestName}${payoutSuffix}` : '';
     metaRow.appendChild(homeSpan);
     metaRow.appendChild(latestSpan);
     // Place Home/Latest between the name row and the train bubbles
@@ -289,6 +302,19 @@
       }
       stopsRoot.appendChild(stopNode);
     });
+
+    // Toolbar: add stop, roll stop
+    const addStopBtn = node.querySelector('.btn-add-stop');
+    const rollStopBtn = node.querySelector('.btn-roll-stop');
+    
+    // Update roll button text based on whether this is home city selection
+    rollStopBtn.textContent = hasHomeCity ? 'Roll Stop' : 'Roll Home City';
+    rollStopBtn.setAttribute('aria-label', hasHomeCity ? 'Roll destination' : 'Roll for home city');
+    rollStopBtn.setAttribute('title', hasHomeCity ? 'Roll destination' : 'Roll for home city');
+    
+    // Disable add stop button until home city is selected
+    addStopBtn.disabled = !hasHomeCity;
+    addStopBtn.title = hasHomeCity ? 'Add stop' : 'Select home city first';
 
     node.querySelector('.btn-add-stop').addEventListener('click', () => {
       player.stops.unshift(defaultStop());
@@ -382,6 +408,15 @@
 
   // ----- Rolling logic -----
   async function rollNextStop(player, cardNode) {
+    const isEmpty = player.stops.every((s) => !s.cityId);
+    
+    if (isEmpty) {
+      // Special case: Home city selection - only roll for region
+      await rollHomeCity(player, cardNode);
+      return;
+    }
+    
+    // Normal destination rolling - roll for both region and city
     const oe1 = BOXCARS.rollOddEven();
     const s1 = BOXCARS.roll2d6();
     let region;
@@ -414,24 +449,43 @@
 
     const rollText = `${capitalize(oe1)}+${s1} → ${region}; ${capitalize(oe2)}+${s2} → ${cityName}.`;
 
-    // Automatically apply the rolled stop
-    const isEmpty = player.stops.every((s) => !s.cityId);
-    if (isEmpty) {
-      // Populate the existing initial stop as the home city
-      const target = player.stops[player.stops.length - 1];
-      if (cityId) target.cityId = cityId;
-      target.lastRollText = rollText;
-    } else {
-      const newStop = defaultStop();
-      if (cityId) newStop.cityId = cityId;
-      newStop.lastRollText = rollText;
-      newStop._justAdded = true;
-      player.stops.unshift(newStop);
-    }
+    // Add new stop
+    const newStop = defaultStop();
+    if (cityId) newStop.cityId = cityId;
+    newStop.lastRollText = rollText;
+    newStop._justAdded = true;
+    player.stops.unshift(newStop);
     player._pendingRollText = '';
     recomputeAllPayouts(player);
     saveState();
     render();
+  }
+
+  async function rollHomeCity(player, cardNode) {
+    const oe1 = BOXCARS.rollOddEven();
+    const s1 = BOXCARS.roll2d6();
+    let region;
+    if (state.settings.map === 'GB' && typeof window.destinationTableGB !== 'undefined') {
+      const table = window.destinationTableGB.regionChart[oe1];
+      region = table && table[s1];
+    } else {
+      region = BOXCARS.mapRegion(oe1, s1);
+    }
+
+    const rollText = `${capitalize(oe1)}+${s1} → ${region}`;
+    
+    // Show home city selection dialog
+    const selectedCityId = await chooseHomeCityInApp(region, player);
+    
+    if (selectedCityId) {
+      // Populate the existing initial stop as the home city
+      const target = player.stops[player.stops.length - 1];
+      target.cityId = selectedCityId;
+      target.lastRollText = `${rollText} → ${idToCity.get(selectedCityId)?.name || 'Unknown City'}`;
+      recomputeAllPayouts(player);
+      saveState();
+      render();
+    }
   }
 
   function chooseRegionInApp(defaultRegion) {
@@ -480,6 +534,94 @@
         const rect = dialog.getBoundingClientRect();
         const inDialog = (e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.top && e.clientY <= rect.bottom);
         if (!inDialog) { cleanup(); dialog.close(); resolve(defaultRegion); }
+      }
+
+      confirmBtn.addEventListener('click', onConfirm);
+      closeBtn.addEventListener('click', onClose);
+      dialog.addEventListener('click', onBackdrop);
+      dialog.showModal();
+
+      function cleanup() {
+        confirmBtn.removeEventListener('click', onConfirm);
+        closeBtn.removeEventListener('click', onClose);
+        dialog.removeEventListener('click', onBackdrop);
+      }
+    });
+  }
+
+  async function chooseHomeCityInApp(region, player) {
+    const dialog = document.getElementById('home-city-dialog');
+    const optionsWrap = document.getElementById('home-city-options');
+    const regionSpan = document.getElementById('home-city-region');
+    const confirmBtn = document.getElementById('btn-home-city-confirm');
+    const closeBtn = document.getElementById('btn-close-home-city');
+    if (!dialog || !optionsWrap || !regionSpan) return null;
+
+    // Update the region text
+    regionSpan.textContent = region;
+
+    return new Promise((resolve) => {
+      // Get all cities in the region that haven't been taken by other players
+      const takenCityIds = state.players
+        .filter(p => p.id !== player.id && p.homeCityId)
+        .map(p => p.homeCityId);
+      
+      const availableCities = enrichedCities.filter(c => 
+        c.region === region && !takenCityIds.includes(c.id)
+      );
+
+      optionsWrap.innerHTML = '';
+      let selectedCityId = null;
+
+      if (availableCities.length === 0) {
+        // No available cities in this region - show message
+        const noCitiesMsg = document.createElement('p');
+        noCitiesMsg.className = 'muted';
+        noCitiesMsg.textContent = 'No cities available in this region. All cities have been taken by other players.';
+        optionsWrap.appendChild(noCitiesMsg);
+        confirmBtn.disabled = true;
+      } else {
+        availableCities.forEach((c) => {
+          const label = document.createElement('label');
+          label.className = 'home-city-option';
+          label.dataset.value = String(c.id);
+          const input = document.createElement('input');
+          input.type = 'radio';
+          input.name = 'home-city';
+          input.value = String(c.id);
+          const span = document.createElement('span');
+          span.textContent = c.name;
+          label.appendChild(input);
+          label.appendChild(span);
+          label.addEventListener('click', () => {
+            selectedCityId = c.id;
+            updateHomeCitySelection();
+          });
+          optionsWrap.appendChild(label);
+        });
+        
+        // Auto-select first city if available
+        if (availableCities.length > 0) {
+          selectedCityId = availableCities[0].id;
+        }
+      }
+
+      function updateHomeCitySelection() {
+        optionsWrap.querySelectorAll('.home-city-option').forEach((el) => {
+          el.dataset.checked = el.dataset.value === String(selectedCityId) ? 'true' : 'false';
+          const input = el.querySelector('input[type="radio"]');
+          if (input) input.checked = el.dataset.value === String(selectedCityId);
+        });
+        confirmBtn.disabled = !selectedCityId;
+      }
+      updateHomeCitySelection();
+
+      function onConfirm(e) { e.preventDefault(); cleanup(); dialog.close(); resolve(selectedCityId); }
+      function onClose() { cleanup(); resolve(null); }
+      function onBackdrop(e) {
+        const rect = dialog.getBoundingClientRect();
+        const inside = e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.top && e.clientY <= rect.bottom;
+        if (!inside) { onClose(); }
       }
 
       confirmBtn.addEventListener('click', onConfirm);

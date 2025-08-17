@@ -77,6 +77,11 @@ body {
   align-items: center;
   text-decoration: none;
 }
+.btn:disabled, .icon-btn:disabled, .file-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background: #0a0d12;
+}
 .btn.primary { background: var(--panel); border-color: color-mix(in srgb, var(--blue) 50%, var(--border)); color: var(--text); }
 .btn.danger { border-color: color-mix(in srgb, var(--rose) 50%, var(--border)); }
 .btn.subtle { background: transparent; }
@@ -190,6 +195,11 @@ body {
   color: var(--muted);
 }
 .player-meta-inline .home-city { opacity: 0.85; }
+.player-meta-inline .home-city.selecting { 
+  color: var(--amber); 
+  font-weight: 600; 
+  font-style: italic;
+}
 .player-meta-inline .latest-dest { opacity: 0.85; }
 
 /* When collapsed, keep meta visible and hide stops only */
@@ -247,6 +257,25 @@ body {
 .player-card.collapsed .stops { display: none; }
 .player-card.collapsed .stops-toolbar { display: none; }
 
+/* Home city selection state */
+.player-card.selecting-home-city {
+  border: 2px solid var(--amber);
+  box-shadow: 0 0 20px rgba(245, 158, 11, 0.3);
+}
+.player-card.selecting-home-city .player-header {
+  background: linear-gradient(90deg, rgba(245, 158, 11, 0.1), rgba(245, 158, 11, 0.05));
+}
+.player-card.selecting-home-city .btn-roll-stop {
+  background: var(--amber);
+  color: var(--black);
+  font-weight: 700;
+  animation: pulse 2s infinite;
+}
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
 .modal::backdrop { background: rgba(0,0,0,0.6); backdrop-filter: blur(2px); }
 .modal { width: min(960px, 92vw); border: 1px solid var(--border); border-radius: 14px; background: var(--panel); color: var(--text); }
 .modal-header { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 12px; border-bottom: 1px solid var(--border); }
@@ -272,6 +301,13 @@ body {
 .map-card .map-sub { color: var(--muted); font-size: 12px; }
 .map-card:hover { border-color: color-mix(in srgb, var(--accent, var(--blue)) 35%, var(--border)); }
 .map-card[data-checked="true"], .map-card:has(input:checked) { outline: 2px solid var(--accent, var(--blue)); background: #0b0f14; }
+
+/* Home city selection */
+.home-city-options { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 8px; margin-top: 12px; }
+.home-city-option { display: flex; align-items: center; gap: 8px; border: 1px solid var(--border); border-radius: 10px; padding: 8px 10px; background: #0e131a; cursor: pointer; transition: all 0.2s ease; }
+.home-city-option input { display: none; }
+.home-city-option:hover { border-color: color-mix(in srgb, var(--accent, var(--blue)) 35%, var(--border)); background: #0b1118; }
+.home-city-option[data-checked="true"], .home-city-option:has(input:checked) { outline: 2px solid var(--accent, var(--blue)); background: #0b0f14; }
 
 @media (max-width: 900px) {
   .players { grid-template-columns: 1fr; }
