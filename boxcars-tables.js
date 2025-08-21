@@ -16,30 +16,18 @@
 
   // Region selection uses destinationTable.regionChart (official table)
 
-  // City groups by region using ids from payouts.js `cities` list
-  const CITY_IDS_BY_REGION = {
-    "Northeast": [
-      1, 3, 6, 7, 15, 16, 20, 40, 45, 47, 49, 54, 67, 41
-    ],
-    "North Central": [
-      13, 14, 20, 25, 27, 35, 36, 63, 64, 19, 44
-    ],
-    "Southeast": [
-      2, 5, 10, 11, 12, 26, 28, 30, 32, 33, 34, 37, 38, 39, 54, 65
-    ],
-    "South Central": [
-      17, 23, 24, 30, 33, 57, 61, 43
-    ],
-    "Plains": [
-      4, 9, 18, 19, 22, 27, 44, 51, 52
-    ],
-    "Northwest": [
-      8, 48, 50, 55, 56, 60, 62
-    ],
-    "Southwest": [
-      21, 29, 31, 42, 46, 53, 58, 59, 56, 66
-    ],
-  };
+  // Build name → id map using global cities list from payouts.js
+  const NAME_TO_ID = (() => {
+    const map = new Map();
+    if (typeof window !== 'undefined' && Array.isArray(window.cities)) {
+      window.cities.forEach((c) => {
+        map.set(String(c.name).toLowerCase(), c.id);
+      });
+    }
+    return map;
+  })();
+
+
 
   const destinationTable = {
     regionChart: {
@@ -282,17 +270,6 @@
     return (1 + Math.floor(Math.random() * 6)) + (1 + Math.floor(Math.random() * 6));
   }
 
-  // Build name → id map using global cities list from payouts.js
-  const NAME_TO_ID = (() => {
-    const map = new Map();
-    if (typeof window !== 'undefined' && Array.isArray(window.cities)) {
-      window.cities.forEach((c) => {
-        map.set(String(c.name).toLowerCase(), c.id);
-      });
-    }
-    return map;
-  })();
-
   function resolveCityIdFromName(regionName, cityName) {
     if (!cityName) return null;
     const key = cityName.toLowerCase();
@@ -313,6 +290,37 @@
     if (direct) return direct;
     if (corrected) return NAME_TO_ID.get(corrected) || null;
     return null;
+  }
+
+  // Function to derive city IDs by region from destinationTable
+  function deriveCityIdsByRegion() {
+    const cityIdsByRegion = {};
+    
+    // Initialize empty arrays for each region
+    REGIONS.forEach(region => {
+      cityIdsByRegion[region] = [];
+    });
+    
+    // Extract all unique city names from destinationTable and map them to their regions
+    Object.entries(destinationTable.destinationCharts).forEach(([regionName, charts]) => {
+      Object.values(charts).forEach(rollTable => {
+        Object.values(rollTable).forEach(cityName => {
+          if (cityName) {
+            const cityId = resolveCityIdFromName(regionName, cityName);
+            if (cityId !== null && !cityIdsByRegion[regionName].includes(cityId)) {
+              cityIdsByRegion[regionName].push(cityId);
+            }
+          }
+        });
+      });
+    });
+    
+    // Sort city IDs numerically for each region
+    Object.values(cityIdsByRegion).forEach(cityIds => {
+      cityIds.sort((a, b) => a - b);
+    });
+    
+    return cityIdsByRegion;
   }
 
   function mapRegion(oddEvenStr, sum2d6) {
@@ -339,7 +347,8 @@
   // Export globals
   window.BOXCARS = {
     REGIONS,
-    CITY_IDS_BY_REGION,
+    CITY_IDS_BY_REGION: deriveCityIdsByRegion(),
+    deriveCityIdsByRegion,
     destinationTable,
     rollOddEven: oddEven,
     roll2d6,
