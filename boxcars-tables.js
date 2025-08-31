@@ -344,8 +344,14 @@
     return { id, name: cityName };
   }
 
-  // Export globals
-  window.BOXCARS = {
+  // Delegate US payouts to the canonical findPayout from payouts.js (if present)
+  function findPayoutUS(a, b) {
+    const fp = (typeof window !== 'undefined' && window.findPayout) || (typeof global !== 'undefined' && global.findPayout);
+    return typeof fp === 'function' ? fp(a, b) : undefined;
+  }
+
+  // Export globals (both window and global for Node/Jest)
+  const api = {
     REGIONS,
     CITY_IDS_BY_REGION: deriveCityIdsByRegion(),
     deriveCityIdsByRegion,
@@ -355,7 +361,15 @@
     mapRegion,
     pickCityByTable,
     getCityByTable,
+    findPayout: findPayoutUS,
   };
+
+  if (typeof window !== 'undefined') {
+    window.BOXCARS = api;
+  }
+  if (typeof global !== 'undefined') {
+    global.BOXCARS = api;
+  }
 })();
 
 
