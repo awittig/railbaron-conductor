@@ -16,6 +16,12 @@ describe('Rail Baron Payout System', () => {
     
     // Then load the US tables
     require(path.join(__dirname, '../boxcars-tables.js'));
+    // Ensure US dataset (generated) is loaded when available
+    try {
+      require(path.join(__dirname, '../generated/boxcars-us-tables.generated.js'));
+    } catch (e) {
+      try { require(path.join(__dirname, '../boxcars-us-tables.js')); } catch (_) {}
+    }
     
     // Then load the British tables (prefer generated)
     try {
@@ -207,12 +213,10 @@ describe('Rail Baron Payout System', () => {
 
     test('should verify specific known payouts', () => {
       const matrix = global.payoffTableGB.matrix;
-      
-      // Hereford to Bangor should be 8
-      expect(matrix[41][3]).toBe(8);
-      
-      // Bangor to Hereford should be the same (assuming symmetric)
-      expect(matrix[3][41]).toBe(8);
+      const herefordIdx = boxcarsBritainTables.resolveIdByName('Hereford') - 1;
+      const bangorIdx = boxcarsBritainTables.resolveIdByName('Bangor') - 1;
+      expect(matrix[herefordIdx][bangorIdx]).toBe(8);
+      expect(matrix[bangorIdx][herefordIdx]).toBe(8);
     });
   });
 });
