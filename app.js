@@ -697,6 +697,9 @@
   }
 
   function renderStatsTable(includeUnreachable) {
+    const RBs = (typeof window !== 'undefined' && window.RB) || (typeof global !== 'undefined' && global.RB) || null;
+    const renderStats = RBs && RBs.ui && RBs.ui.stats && RBs.ui.stats.renderStatsTable;
+    if (typeof renderStats === 'function') return renderStats(state, includeUnreachable);
     const wrap = document.getElementById('stats-table-wrap');
     const { rows, totals } = computeStats(includeUnreachable);
     const table = document.createElement('table');
