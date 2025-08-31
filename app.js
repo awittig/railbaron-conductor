@@ -431,83 +431,44 @@
 
   // ----- Rolling logic -----
   async function rollNextStop(player, cardNode) {
-    const isEmpty = player.stops.every((s) => !s.cityId);
-    
-    if (isEmpty) {
-      // Special case: Home city selection - only roll for region
-      await rollHomeCity(player, cardNode);
-      return;
+    const ctx = {
+      map: state.settings.map,
+      idToCity,
+      chooseRegion: (defaultRegion) => chooseRegionInApp(defaultRegion),
+      chooseHomeCity: (region) => chooseHomeCityInApp(region, player),
+      rngOddEven: () => BOXCARS.rollOddEven(),
+      rng2d6: () => BOXCARS.roll2d6(),
+      BOXCARS,
+      BOXCARS_GB: window.BOXCARS_GB,
+      destinationTableGB: window.destinationTableGB,
+      defaultStop,
+      recomputeAllPayouts,
+      saveState,
+      render,
+    };
+    if (window.RB && window.RB.rolling && typeof window.RB.rolling.rollNextStop === 'function') {
+      return window.RB.rolling.rollNextStop(player, ctx);
     }
-    
-    // Normal destination rolling - roll for both region and city
-    const oe1 = BOXCARS.rollOddEven();
-    const s1 = BOXCARS.roll2d6();
-    let region;
-    if (state.settings.map === 'GB' && typeof window.destinationTableGB !== 'undefined') {
-      const table = window.destinationTableGB.regionChart[oe1];
-      region = table && table[s1];
-    } else {
-      region = BOXCARS.mapRegion(oe1, s1);
-    }
-
-    const currentRegion = getCurrentRegion(player);
-    if (currentRegion && region === currentRegion) {
-      // Operator may choose any region instead via in-app dialog
-      region = await chooseRegionInApp(region);
-    }
-
-    const oe2 = BOXCARS.rollOddEven();
-    const s2 = BOXCARS.roll2d6();
-    let cityId = null;
-    let cityName = '—';
-    if (state.settings.map === 'GB' && typeof window.destinationTableGB !== 'undefined' && typeof window.BOXCARS_GB !== 'undefined') {
-      const rchart = window.destinationTableGB.destinationCharts[region];
-      const cname = rchart?.[oe2]?.[s2] || null;
-      cityName = cname || '—';
-      if (cname) { cityId = window.BOXCARS_GB.resolveIdByName(cname); }
-    } else {
-      cityId = BOXCARS.pickCityByTable(region, oe2, s2);
-      cityName = idToCity.get(cityId)?.name || '—';
-    }
-
-    const rollText = `${capitalize(oe1)}+${s1} → ${region}; ${capitalize(oe2)}+${s2} → ${cityName}.`;
-
-    // Add new stop
-    const newStop = defaultStop();
-    if (cityId) newStop.cityId = cityId;
-    newStop.lastRollText = rollText;
-    newStop._justAdded = true;
-    player.stops.unshift(newStop);
-    player._pendingRollText = '';
-    recomputeAllPayouts(player);
-    saveState();
-    render();
   }
 
   async function rollHomeCity(player, cardNode) {
-    const oe1 = BOXCARS.rollOddEven();
-    const s1 = BOXCARS.roll2d6();
-    let region;
-    if (state.settings.map === 'GB' && typeof window.destinationTableGB !== 'undefined') {
-      const table = window.destinationTableGB.regionChart[oe1];
-      region = table && table[s1];
-    } else {
-      region = BOXCARS.mapRegion(oe1, s1);
-    }
-
-    const rollText = `${capitalize(oe1)}+${s1} → ${region}`;
-    
-    // Show home city selection dialog
-    const selectedCityId = await chooseHomeCityInApp(region, player);
-    
-    if (selectedCityId) {
-      // Populate the existing initial stop as the home city
-      const target = player.stops[player.stops.length - 1];
-      target.cityId = selectedCityId;
-      target.lastRollText = `${rollText} → ${idToCity.get(selectedCityId)?.name || 'Unknown City'}`;
-      recomputeAllPayouts(player);
-      saveState();
-      render();
+    const ctx = {
+      map: state.settings.map,
+      idToCity,
+      chooseRegion: (defaultRegion) => chooseRegionInApp(defaultRegion),
+      chooseHomeCity: (region) => chooseHomeCityInApp(region, player),
+      rngOddEven: () => BOXCARS.rollOddEven(),
+      rng2d6: () => BOXCARS.roll2d6(),
+      BOXCARS,
+      BOXCARS_GB: window.BOXCARS_GB,
+      destinationTableGB: window.destinationTableGB,
+      defaultStop,
+      recomputeAllPayouts,
+      saveState,
+      render,
+    };
+    if (window.RB && window.RB.rolling && typeof window.RB.rolling.rollHomeCity === 'function') {
+      return window.RB.rolling.rollHomeCity(player, ctx);
     }
   }
 
