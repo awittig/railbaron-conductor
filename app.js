@@ -512,6 +512,12 @@
   }
 
   function chooseRegionInApp(defaultRegion) {
+    const RBs = (typeof window !== 'undefined' && window.RB) || (typeof global !== 'undefined' && global.RB) || null;
+    const chooseRegion = RBs && RBs.ui && RBs.ui.dialogs && RBs.ui.dialogs.chooseRegion;
+    if (typeof chooseRegion === 'function') {
+      const regions = (state.settings.map === 'GB' && typeof window.BOXCARS_GB !== 'undefined') ? window.BOXCARS_GB.REGIONS : BOXCARS.REGIONS;
+      return chooseRegion(defaultRegion, regions);
+    }
     const dialog = document.getElementById('region-dialog');
     const optionsWrap = document.getElementById('region-options');
     const confirmBtn = document.getElementById('btn-region-confirm');
@@ -573,6 +579,14 @@
   }
 
   async function chooseHomeCityInApp(region, player) {
+    const RBs = (typeof window !== 'undefined' && window.RB) || (typeof global !== 'undefined' && global.RB) || null;
+    const chooseHomeCity = RBs && RBs.ui && RBs.ui.dialogs && RBs.ui.dialogs.chooseHomeCity;
+    if (typeof chooseHomeCity === 'function') {
+      const takenCityIds = state.players
+        .filter(p => p.id !== player.id && p.homeCityId)
+        .map(p => p.homeCityId);
+      return chooseHomeCity(region, player, enrichedCities, takenCityIds);
+    }
     const dialog = document.getElementById('home-city-dialog');
     const optionsWrap = document.getElementById('home-city-options');
     const regionSpan = document.getElementById('home-city-region');
@@ -904,6 +918,9 @@
 
   // Map selection dialog
   function showMapDialog(defaultMap) {
+    const RBs = (typeof window !== 'undefined' && window.RB) || (typeof global !== 'undefined' && global.RB) || null;
+    const showMap = RBs && RBs.ui && RBs.ui.dialogs && RBs.ui.dialogs.showMapDialog;
+    if (typeof showMap === 'function') return showMap(defaultMap);
     const dialog = document.getElementById('map-dialog');
     const options = document.getElementById('map-options');
     const closeBtn = document.getElementById('btn-close-map');
