@@ -2,3 +2,4 @@
 build/
 .gradle/
 util/
+node_modules/

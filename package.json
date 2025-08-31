@@ -1,0 +1,37 @@
+{
+  "name": "railbaron-conductor",
+  "version": "1.0.0",
+  "description": "Rail Baron game conductor with US and British versions",
+  "main": "app.js",
+  "scripts": {
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "start": "python -m http.server 8000"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0"
+  },
+  "jest": {
+    "testEnvironment": "jsdom",
+    "setupFilesAfterEnv": [
+      "<rootDir>/test/setup.js"
+    ],
+    "testMatch": [
+      "<rootDir>/test/**/*.test.js"
+    ],
+    "collectCoverageFrom": [
+      "*.js",
+      "!test/**/*",
+      "!node_modules/**/*"
+    ]
+  },
+  "keywords": [
+    "rail-baron",
+    "game",
+    "board-game"
+  ],
+  "author": "",
+  "license": "MIT"
+}
