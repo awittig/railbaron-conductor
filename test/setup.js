@@ -41,3 +41,17 @@ global.sessionStorage = {
 if (!global.fetch) {
   global.fetch = jest.fn();
 }
+
+// Load RB core and UI modules so app.js can depend on them directly
+require('../src/core/format.js');
+require('../src/core/models.js');
+require('../src/core/payouts.js');
+require('../src/core/derived.js');
+require('../src/core/stats.js');
+require('../src/core/rolling.js');
+require('../src/ui/components/stopItem.js');
+require('../src/ui/dialogs/statsDialog.js');
+require('../src/ui/dialogs/regionDialog.js');
+require('../src/ui/dialogs/homeCityDialog.js');
+require('../src/ui/dialogs/mapDialog.js');
+require('../src/ui/dragdrop.js');
