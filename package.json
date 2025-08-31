@@ -7,7 +7,9 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
-    "start": "python -m http.server 8000"
+    "start": "python -m http.server 8000",
+    "export:gb": "node tools/export-gb-payouts.js",
+    "build:data": "node tools/build-gb-from-json.js"
   },
   "devDependencies": {
     "jest": "^29.7.0",
