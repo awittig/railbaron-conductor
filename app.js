@@ -1,7 +1,7 @@
 (function() {
   'use strict';
 
-  if (typeof window.BOXCARS === 'undefined') {
+  if (typeof window.BOXCARS === 'undefined' || (typeof window.BOXCARS_US === 'undefined' && typeof window.BOXCARS_GB === 'undefined')) {
     alert('Error: Core tables failed to load.');
     return;
   }
@@ -13,18 +13,27 @@
   let activeRegions = [];
 
   function setupActiveDataset(map) {
-    // Build city map from selected dataset
+    // Use unified BOXCARS_* APIs for both US and GB
+    const dataset = (map === 'GB' && window.BOXCARS_GB) ? window.BOXCARS_GB : window.BOXCARS_US;
+    if (!dataset) {
+      console.error(`Error: Dataset for map '${map}' not found. Available:`, {
+        BOXCARS_US: !!window.BOXCARS_US,
+        BOXCARS_GB: !!window.BOXCARS_GB
+      });
+      return;
+    }
+
+    // Build city map from unified dataset
     idToCity = new Map();
-    const useGB = (map === 'GB' && typeof window.BOXCARS_GB !== 'undefined');
-    const srcCities = useGB ? window.BOXCARS_GB.CITIES : (window.cities || []);
+    const srcCities = dataset.CITIES || [];
     for (const c of srcCities) {
       idToCity.set(c.id, { id: c.id, name: c.name, region: null });
     }
 
     // Region membership
     const idToRegion = new Map();
-    const cityIdsByRegion = useGB ? window.BOXCARS_GB.CITY_IDS_BY_REGION : window.BOXCARS.CITY_IDS_BY_REGION;
-    for (const [regionName, ids] of Object.entries(cityIdsByRegion || {})) {
+    const cityIdsByRegion = dataset.CITY_IDS_BY_REGION || {};
+    for (const [regionName, ids] of Object.entries(cityIdsByRegion)) {
       for (const id of ids) idToRegion.set(id, regionName);
     }
     for (const [id, c] of idToCity) {
@@ -32,14 +41,9 @@
     }
     enrichedCities = Array.from(idToCity.values()).sort((a, b) => a.name.localeCompare(b.name));
 
-    // Payout resolver and regions list
-    if (useGB) {
-      activeFindPayout = window.BOXCARS_GB.findPayout;
-    } else {
-      const fp = (typeof window !== 'undefined' && window.findPayout) || (typeof global !== 'undefined' && global.findPayout);
-      activeFindPayout = fp || (() => undefined);
-    }
-    activeRegions = useGB ? (window.BOXCARS_GB.REGIONS || []) : (window.BOXCARS.REGIONS || []);
+    // Unified payout resolver and regions list
+    activeFindPayout = dataset.findPayout;
+    activeRegions = dataset.REGIONS || [];
   }
 
   // ----- State management -----
@@ -184,6 +188,7 @@
 
   // ----- Rolling logic -----
   async function rollNextStop(player, cardNode) {
+    const dataset = (state.settings.map === 'GB' && window.BOXCARS_GB) ? window.BOXCARS_GB : window.BOXCARS_US;
     const ctx = {
       map: state.settings.map,
       idToCity,
@@ -192,8 +197,8 @@
       rngOddEven: () => BOXCARS.rollOddEven(),
       rng2d6: () => BOXCARS.roll2d6(),
       BOXCARS,
-      BOXCARS_GB: window.BOXCARS_GB,
-      destinationTableGB: window.destinationTableGB,
+      dataset,
+      destinationTable: dataset.destinationTable || window.destinationTableGB,
       defaultStop,
       recomputeAllPayouts,
       saveState,
@@ -205,6 +210,7 @@
   }
 
   async function rollHomeCity(player, cardNode) {
+    const dataset = (state.settings.map === 'GB' && window.BOXCARS_GB) ? window.BOXCARS_GB : window.BOXCARS_US;
     const ctx = {
       map: state.settings.map,
       idToCity,
@@ -213,8 +219,8 @@
       rngOddEven: () => BOXCARS.rollOddEven(),
       rng2d6: () => BOXCARS.roll2d6(),
       BOXCARS,
-      BOXCARS_GB: window.BOXCARS_GB,
-      destinationTableGB: window.destinationTableGB,
+      dataset,
+      destinationTable: dataset.destinationTable || window.destinationTableGB,
       defaultStop,
       recomputeAllPayouts,
       saveState,
@@ -229,7 +235,7 @@
     const RBs = (typeof window !== 'undefined' && window.RB) || (typeof global !== 'undefined' && global.RB) || null;
     const chooseRegion = RBs && RBs.ui && RBs.ui.dialogs && RBs.ui.dialogs.chooseRegion;
     if (typeof chooseRegion === 'function') {
-      const regions = (state.settings.map === 'GB' && typeof window.BOXCARS_GB !== 'undefined') ? window.BOXCARS_GB.REGIONS : BOXCARS.REGIONS;
+      const regions = activeRegions;
       return chooseRegion(defaultRegion, regions);
     }
     const dialog = document.getElementById('region-dialog');
@@ -239,7 +245,7 @@
     if (!dialog || !optionsWrap) return Promise.resolve(defaultRegion);
 
     return new Promise((resolve) => {
-      const regions = (state.settings.map === 'GB' && typeof window.BOXCARS_GB !== 'undefined') ? window.BOXCARS_GB.REGIONS : BOXCARS.REGIONS;
+      const regions = activeRegions;
       optionsWrap.innerHTML = '';
       let selected = defaultRegion;
       regions.forEach((r) => {
@@ -562,6 +568,11 @@
   if (typeof global !== 'undefined') {
     global.railbaronApp = {
       get activeFindPayout() { return activeFindPayout; },
+      setMap: function(map) {
+        state.settings.map = (map === 'GB') ? 'GB' : 'US';
+        setupActiveDataset(state.settings.map);
+        return state.settings.map;
+      },
     };
   }
   // If first load (no players) show map select once

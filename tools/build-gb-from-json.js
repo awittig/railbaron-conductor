@@ -161,7 +161,11 @@ const js = `${banner}
         CITY_IDS_BY_REGION: ${JSON.stringify(cityIdsByRegionOut)},
         findPayout,
         resolveIdByName,
-        REGIONS: ${JSON.stringify(regionsOut)}
+        REGIONS: ${JSON.stringify(regionsOut)},
+        destinationTable: {
+          regionChart: ${JSON.stringify(regionsSrc?.regionChart || {})},
+          destinationCharts: ${JSON.stringify(regionsSrc?.destinationCharts || {})}
+        }
       };
     } else if (typeof global !== 'undefined') {
       global.${exportName} = {
@@ -169,7 +173,11 @@ const js = `${banner}
         CITY_IDS_BY_REGION: ${JSON.stringify(cityIdsByRegionOut)},
         findPayout,
         resolveIdByName,
-        REGIONS: ${JSON.stringify(regionsOut)}
+        REGIONS: ${JSON.stringify(regionsOut)},
+        destinationTable: {
+          regionChart: ${JSON.stringify(regionsSrc?.regionChart || {})},
+          destinationCharts: ${JSON.stringify(regionsSrc?.destinationCharts || {})}
+        }
       };
     }
   })();
