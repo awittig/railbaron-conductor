@@ -106,6 +106,9 @@
 
   // ----- Payouts and recomputation -----
   function computePayout(prevCityId, currCityId) {
+    const RBs = (typeof window !== 'undefined' && window.RB) || (typeof global !== 'undefined' && global.RB) || null;
+    const coreCompute = RBs && RBs.payouts && RBs.payouts.computePayout;
+    if (typeof coreCompute === 'function') return coreCompute(activeFindPayout, prevCityId, currCityId);
     if (!prevCityId || !currCityId) return null;
     const amount = activeFindPayout(prevCityId, currCityId);
     return typeof amount === 'number' ? amount : null;
@@ -119,16 +122,25 @@
   }
 
   function recomputeAllPayouts(player) {
-    const stops = player.stops;
-    for (let i = 0; i < stops.length; i++) {
-      const curr = stops[i];
-      const prev = stops[i + 1]; // older stop is next in the list (newest at top)
-      curr.payoutFromPrev = computePayout(prev?.cityId || null, curr.cityId || null);
+    const RBs = (typeof window !== 'undefined' && window.RB) || (typeof global !== 'undefined' && global.RB) || null;
+    const recompute = RBs && RBs.payouts && RBs.payouts.recomputeAllPayouts;
+    if (typeof recompute === 'function') {
+      recompute(player, activeFindPayout);
+    } else {
+      const stops = player.stops;
+      for (let i = 0; i < stops.length; i++) {
+        const curr = stops[i];
+        const prev = stops[i + 1];
+        curr.payoutFromPrev = computePayout(prev?.cityId || null, curr.cityId || null);
+      }
     }
     updateDerivedFields(player);
   }
 
   function getCurrentRegion(player) {
+    const RBs = (typeof window !== 'undefined' && window.RB) || (typeof global !== 'undefined' && global.RB) || null;
+    const getRegion = RBs && RBs.derived && RBs.derived.getCurrentRegion;
+    if (typeof getRegion === 'function') return getRegion(player, idToCity);
     const latest = player.stops.find((s) => s.cityId);
     if (!latest) return null;
     const c = idToCity.get(latest.cityId);
@@ -136,9 +148,11 @@
   }
 
   function updateDerivedFields(player) {
+    const RBs = (typeof window !== 'undefined' && window.RB) || (typeof global !== 'undefined' && global.RB) || null;
+    const update = RBs && RBs.derived && RBs.derived.updateDerivedFields;
+    if (typeof update === 'function') return update(player);
     const visited = player.stops.map((s) => s.cityId).filter(Boolean);
     player.visitedCityIds = visited;
-    // Home city is first stop with a city chronologically (oldest): last in array
     let home = null;
     for (let i = player.stops.length - 1; i >= 0; i--) {
       const cid = player.stops[i].cityId;
