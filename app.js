@@ -649,6 +649,9 @@
 
   // ----- Stats -----
   function computeStats(includeUnreachable) {
+    const RBs = (typeof window !== 'undefined' && window.RB) || (typeof global !== 'undefined' && global.RB) || null;
+    const coreCompute = RBs && RBs.stats && RBs.stats.computeStats;
+    if (typeof coreCompute === 'function') return coreCompute(state, includeUnreachable);
     const rows = state.players.map((p) => {
       const legs = p.stops.filter((s, idx) => {
         if (idx === p.stops.length - 1) return false; // last has no previous
@@ -716,18 +719,26 @@
   }
 
   function exportCSV(includeUnreachable) {
-    const { rows } = computeStats(includeUnreachable);
-    const header = ['Player','Completed legs','Total payouts','Unique cities'];
-    const lines = [header.join(',')];
-    for (const r of rows) {
-      lines.push([
-        csvEscape(r.name),
-        r.legsCount,
-        r.totalPayout,
-        r.uniqueCities,
-      ].join(','));
+    const RBs = (typeof window !== 'undefined' && window.RB) || (typeof global !== 'undefined' && global.RB) || null;
+    const buildCSV = RBs && RBs.stats && RBs.stats.buildCSV;
+    let csv;
+    if (typeof buildCSV === 'function') {
+      csv = buildCSV(state, includeUnreachable);
+    } else {
+      const { rows } = computeStats(includeUnreachable);
+      const header = ['Player','Completed legs','Total payouts','Unique cities'];
+      const lines = [header.join(',')];
+      for (const r of rows) {
+        lines.push([
+          csvEscape(r.name),
+          r.legsCount,
+          r.totalPayout,
+          r.uniqueCities,
+        ].join(','));
+      }
+      csv = lines.join('\n');
     }
-    const blob = new Blob([lines.join('\n')], { type: 'text/csv;charset=utf-8;' });
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -736,20 +747,21 @@
     URL.revokeObjectURL(url);
   }
 
-  function csvEscape(val) {
+  const RBns = (typeof window !== 'undefined' && window.RB) || (typeof global !== 'undefined' && global.RB) || null;
+  const csvEscape = (RBns && RBns.format && RBns.format.csvEscape) || function(val) {
     const s = String(val ?? '');
     if (/[",\n]/.test(s)) return '"' + s.replace(/"/g, '""') + '"';
     return s;
-  }
+  };
 
-  function escapeHtml(s) {
+  const escapeHtml = (RBns && RBns.format && RBns.format.escapeHtml) || function(s) {
     return String(s)
       .replace(/&/g, '&amp;')
       .replace(/</g, '&lt;')
       .replace(/>/g, '&gt;')
       .replace(/"/g, '&quot;')
       .replace(/'/g, '&#039;');
-  }
+  };
 
   // ----- Import/Export/New Game -----
   function exportJSON() {

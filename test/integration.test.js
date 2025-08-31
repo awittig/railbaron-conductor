@@ -12,13 +12,17 @@ describe('Rail Baron Integration Tests', () => {
     // Load all modules in the correct order
     require(path.join(__dirname, '../payouts.js'));
     require(path.join(__dirname, '../boxcars-tables.js'));
-    require(path.join(__dirname, '../boxcars-britain-tables.js'));
+    try {
+      require(path.join(__dirname, '../generated/boxcars-britain-tables.generated.js'));
+    } catch (e) {
+      require(path.join(__dirname, '../boxcars-britain-tables.js'));
+    }
     require(path.join(__dirname, '../app.js'));
     
     // Get references to the loaded modules
     app = global.railbaronApp;
-    boxcarsGB = global.BOXCARS_GB;
-    boxcarsUS = global.BOXCARS;
+    boxcarsGB = global.BOXCARS_GB || (global.window && global.window.BOXCARS_GB);
+    boxcarsUS = global.BOXCARS || (global.window && global.window.BOXCARS);
   });
 
   describe('Complete Payout Flow', () => {
@@ -48,7 +52,7 @@ describe('Rail Baron Integration Tests', () => {
       const herefordId = boxcarsGB.resolveIdByName(herefordName);
       const bangorId = boxcarsGB.resolveIdByName(bangorName);
       
-      expect(herefordId).toBe(42);
+      expect(herefordId).toBe(45);
       expect(bangorId).toBe(4);
       
       // Calculate payout using IDs
@@ -58,11 +62,11 @@ describe('Rail Baron Integration Tests', () => {
 
     test('should verify matrix consistency across different access methods', () => {
       const matrix = global.payoffTableGB.matrix;
-      const herefordIndex = 41;
-      const bangorIndex = 3;
+      const herefordIdx = boxcarsGB.resolveIdByName('Hereford') - 1;
+      const bangorIdx = boxcarsGB.resolveIdByName('Bangor') - 1;
       
       // Access via matrix directly
-      const directPayout = matrix[herefordIndex][bangorIndex];
+      const directPayout = matrix[herefordIdx][bangorIdx];
       
       // Access via city IDs
       const hereford = boxcarsGB.CITIES.find(city => city.name === 'Hereford');
