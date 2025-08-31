@@ -446,9 +446,12 @@
   function newGame() {
     if (!confirm('Start a new game? This will clear all players and stops.')) return;
     showMapDialog(state.settings.map || 'US').then((map) => {
-      state = { players: [], settings: { map } };
+      // Mutate in place to preserve references captured by event handlers
+      state.players = [];
+      state.settings = { map: map };
       saveState();
       setupActiveDataset(map || 'US');
+      ensureDefaultPlayers();
       render();
     }).catch(() => {/* noop on cancel */});
   }
@@ -550,7 +553,6 @@
   // ----- Init -----
   function ensureDefaultPlayers() {
     if (state.players.length === 0) {
-      state.players.push(defaultPlayer());
       state.players.push(defaultPlayer());
     }
   }
