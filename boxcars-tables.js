@@ -346,6 +346,8 @@
 
   // Delegate US payouts to the canonical findPayout from payouts.js (if present)
   function findPayoutUS(a, b) {
+    const us = (typeof window !== 'undefined' && window.BOXCARS_US) || (typeof global !== 'undefined' && global.BOXCARS_US);
+    if (us && typeof us.findPayout === 'function') return us.findPayout(a, b);
     const fp = (typeof window !== 'undefined' && window.findPayout) || (typeof global !== 'undefined' && global.findPayout);
     return typeof fp === 'function' ? fp(a, b) : undefined;
   }
