@@ -876,6 +876,9 @@
 
   // Drag-and-drop reordering
   function bindDragAndDrop() {
+    const RBs = (typeof window !== 'undefined' && window.RB) || (typeof global !== 'undefined' && global.RB) || null;
+    const bind = RBs && RBs.ui && RBs.ui.dragdrop && RBs.ui.dragdrop.bind;
+    if (typeof bind === 'function') return bind(playersRoot, state, saveState, render);
     const cards = Array.from(playersRoot.querySelectorAll('.player-card'));
     let dragId = null;
     cards.forEach((card) => {
