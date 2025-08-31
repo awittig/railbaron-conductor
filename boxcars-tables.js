@@ -364,6 +364,23 @@
     findPayout: findPayoutUS,
   };
 
+  // Lazily resolve US CITIES from either generated dataset or legacy global 'cities'
+  function resolveUSCities() {
+    const w = (typeof window !== 'undefined') ? window : undefined;
+    const g = (typeof global !== 'undefined') ? global : undefined;
+    const src = (w && w.BOXCARS_US && w.BOXCARS_US.CITIES)
+      || (g && g.BOXCARS_US && g.BOXCARS_US.CITIES)
+      || (w && Array.isArray(w.cities) && w.cities)
+      || (g && Array.isArray(g.cities) && g.cities)
+      || [];
+    return src;
+  }
+  try {
+    Object.defineProperty(api, 'CITIES', { get: resolveUSCities, enumerable: true });
+  } catch (_) {
+    api.CITIES = resolveUSCities();
+  }
+
   if (typeof window !== 'undefined') {
     window.BOXCARS = api;
   }
