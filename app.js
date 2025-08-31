@@ -352,11 +352,21 @@
   }
 
   function renderStopItem(player, stop, stopIdx) {
+    const RBs = (typeof window !== 'undefined' && window.RB) || (typeof global !== 'undefined' && global.RB) || null;
+    const comp = RBs && RBs.ui && RBs.ui.components && RBs.ui.components.stopItem && RBs.ui.components.stopItem.renderStopItem;
+    if (typeof comp === 'function') {
+      return comp(player, stop, stopIdx, {
+        enrichedCities,
+        formatCurrency,
+        recomputeAllPayouts,
+        saveState,
+        render,
+        defaultStop,
+      });
+    }
     const node = tplStopItem.content.firstElementChild.cloneNode(true);
     node.dataset.stopIndex = String(stopIdx);
     node.classList.toggle('unreachable', !!stop.unreachable);
-
-    // City select
     const citySelect = node.querySelector('.stop-city');
     citySelect.innerHTML = '';
     const blank = document.createElement('option');
@@ -376,12 +386,8 @@
       saveState();
       render();
     });
-
-    // Payout
     const payoutSpan = node.querySelector('.payout');
     payoutSpan.textContent = formatCurrency(stop.payoutFromPrev);
-
-    // Unreachable
     const unreachableCheckbox = node.querySelector('.stop-unreachable');
     unreachableCheckbox.checked = !!stop.unreachable;
     unreachableCheckbox.addEventListener('change', () => {
@@ -389,8 +395,6 @@
       saveState();
       render();
     });
-
-    // Delete stop (with confirmation)
     node.querySelector('.btn-delete-stop').addEventListener('click', () => {
       if (!confirm('Delete this stop?')) return;
       player.stops.splice(stopIdx, 1);
@@ -399,10 +403,7 @@
       saveState();
       render();
     });
-
-    // Roll text
     node.querySelector('.roll-text').textContent = stop.lastRollText || '';
-
     return node;
   }
 
