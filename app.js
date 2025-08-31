@@ -51,11 +51,16 @@
   /** @type {{ players: Player[], settings: { map: 'US'|'GB' } }} */
   let state = { players: [], settings: { map: 'US' } };
 
-  function uuid() {
+  const RBm = (typeof window !== 'undefined' && window.RB) || (typeof global !== 'undefined' && global.RB) || null;
+  const uuid = (RBm && RBm.models && RBm.models.uuid) || function() {
     return 'p-' + Math.random().toString(36).slice(2, 9);
-  }
+  };
 
-  function defaultPlayer() {
+  const defaultStop = (RBm && RBm.models && RBm.models.defaultStop) || function() {
+    return { cityId: null, payoutFromPrev: null, unreachable: false, lastRollText: '' };
+  };
+
+  const defaultPlayer = (RBm && RBm.models && RBm.models.defaultPlayer) || function() {
     return {
       id: uuid(),
       name: 'Player',
@@ -64,11 +69,7 @@
       stops: [defaultStop()],
       collapsed: false,
     };
-  }
-
-  function defaultStop() {
-    return { cityId: null, payoutFromPrev: null, unreachable: false, lastRollText: '' };
-  }
+  };
 
   function loadState() {
     try {
