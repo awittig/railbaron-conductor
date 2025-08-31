@@ -17,8 +17,12 @@ describe('Rail Baron Payout System', () => {
     // Then load the US tables
     require(path.join(__dirname, '../boxcars-tables.js'));
     
-    // Then load the British tables
-    require(path.join(__dirname, '../boxcars-britain-tables.js'));
+    // Then load the British tables (prefer generated)
+    try {
+      require(path.join(__dirname, '../generated/boxcars-britain-tables.generated.js'));
+    } catch (e) {
+      require(path.join(__dirname, '../boxcars-britain-tables.js'));
+    }
     
     // Finally load the main app
     require(path.join(__dirname, '../app.js'));

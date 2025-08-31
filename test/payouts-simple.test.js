@@ -9,8 +9,12 @@ describe('Rail Baron Payout System - Simplified Tests', () => {
   let boxcarsGB, payoffTableGB;
   
   beforeAll(() => {
-    // Load only the British tables module
-    require(path.join(__dirname, '../boxcars-britain-tables.js'));
+    // Load generated GB dataset first if present, otherwise fallback to original file
+    try {
+      require(path.join(__dirname, '../generated/boxcars-britain-tables.generated.js'));
+    } catch (e) {
+      require(path.join(__dirname, '../boxcars-britain-tables.js'));
+    }
     
     // Get references to the loaded modules
     boxcarsGB = global.BOXCARS_GB;

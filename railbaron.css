@@ -61,6 +61,8 @@ body {
   letter-spacing: 0.4px;
   color: var(--text);
 }
+.hamburger { display: none; margin-left: 8px; }
+.nav-toggle { display: none; }
 .global-actions { display: flex; gap: 10px; align-items: center; }
 
 .btn, .icon-btn, .file-btn {
@@ -99,6 +101,8 @@ body {
 .file-btn { position: relative; overflow: hidden; }
 .file-btn input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; font-size: 0; }
 .icon-btn { padding: 6px 10px; }
+/* Ensure hamburger is hidden by default on wide screens (overrides .icon-btn display) */
+.icon-btn.hamburger { display: none; }
 
 .app { padding: 16px 20px; }
 .players-toolbar { margin-bottom: 12px; }
@@ -316,4 +320,21 @@ body {
 .github-icon {
   font-size: 14px;
   margin-right: 4px;
+}
+
+/* Mobile header collapse */
+@media (max-width: 560px) {
+  .app-header { padding: 8px 10px; gap: 8px; }
+  /* Keep full title on small screens (no flag replacement) */
+  .app-header h1 { font-size: 18px; }
+  .app-header h1::before { content: none; }
+  .icon-btn.hamburger { display: inline-flex; }
+  .global-actions { gap: 6px; flex-wrap: nowrap; overflow-x: auto; }
+  .btn, .icon-btn, .file-btn { padding: 6px 8px; font-size: 12px; border-radius: 8px; }
+  .btn.github-btn { padding: 6px 8px; }
+
+  /* Collapse actions behind hamburger */
+  .global-actions { display: none; position: absolute; right: 8px; top: 48px; background: #0e131a; border: 1px solid var(--border); border-radius: 12px; padding: 8px; box-shadow: var(--shadow); }
+  .global-actions .btn, .global-actions .file-btn { display: block; width: 100%; text-align: left; margin: 4px 0; }
+  .nav-toggle:checked ~ .global-actions { display: block; }
 }

@@ -8,8 +8,11 @@
   </head>
   <body>
     <header class="app-header" role="banner">
-      <h1>Boxcars Conductor</h1>
+      <h1 data-flag="🇺🇸">Boxcars Conductor</h1>
+      <input id="nav-toggle" class="nav-toggle" type="checkbox" aria-hidden="true" />
+      <label for="nav-toggle" class="icon-btn hamburger" aria-label="Toggle menu" title="Menu">☰</label>
       <div class="global-actions" role="toolbar" aria-label="Global actions">
+        <button id="btn-add-player" class="btn primary" aria-label="Add player">Add Player</button>
         <button id="btn-stats" class="btn" title="View Stats" aria-label="View statistics">Stats</button>
         <button id="btn-export" class="btn" title="Export JSON" aria-label="Export game state">Export</button>
         <label class="btn file-btn" title="Import JSON" aria-label="Import game state">
@@ -24,9 +27,6 @@
     </header>
 
     <main id="app" class="app" role="main">
-      <section class="players-toolbar">
-        <button id="btn-add-player" class="btn primary" aria-label="Add player">Add Player</button>
-      </section>
       <section id="players" class="players" aria-live="polite"></section>
     </main>
 

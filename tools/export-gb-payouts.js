@@ -29,6 +29,7 @@ try {
 }
 
 const payoffTableGB = global.window.payoffTableGB;
+const destTableGB = global.window.destinationTableGB;
 const gb = global.window.BOXCARS_GB;
 if (!payoffTableGB || !gb) {
   fail('GB tables not initialized. Expected window.payoffTableGB and window.BOXCARS_GB.');
@@ -75,6 +76,10 @@ for (let i = 0; i < size; i++) {
 const out = {
   cities,
   payoutsByName,
+  regions: destTableGB ? {
+    regionChart: destTableGB.regionChart,
+    destinationCharts: destTableGB.destinationCharts
+  } : undefined,
   meta: {
     symmetric,
     asymmetricPairs: asymCount,

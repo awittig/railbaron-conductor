@@ -9,7 +9,10 @@
     "test:coverage": "jest --coverage",
     "start": "python -m http.server 8000",
     "export:gb": "node tools/export-gb-payouts.js",
-    "build:data": "node tools/build-gb-from-json.js"
+    "export:us": "node tools/export-us-payouts.js",
+    "build:data:gb": "node tools/build-gb-from-json.js gb",
+    "build:data:us": "node tools/build-gb-from-json.js us",
+    "build:data": "npm run build:data:gb && npm run build:data:us"
   },
   "devDependencies": {
     "jest": "^29.7.0",

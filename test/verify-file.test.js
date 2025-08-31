@@ -38,7 +38,11 @@ describe('File Content Verification', () => {
     }
     
     // Now load the module and check what's actually loaded
-    require(path.join(__dirname, '../boxcars-britain-tables.js'));
+    try {
+      require(path.join(__dirname, '../generated/boxcars-britain-tables.generated.js'));
+    } catch (e) {
+      require(path.join(__dirname, '../boxcars-britain-tables.js'));
+    }
     
     const boxcarsGB = global.BOXCARS_GB;
     const payoffTableGB = global.payoffTableGB;

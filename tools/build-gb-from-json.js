@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 
 /*
-  Build Great Britain payout matrix and helper exports from name-keyed JSON.
+  Build payout matrix and helper exports from name-keyed JSON (GB or US).
 
-  Input:  data/gb-payouts.src.json (generated or maintained by humans)
-  Output: generated/boxcars-britain-tables.generated.js
+  Input:  data/<map>-payouts.src.json (generated or maintained by humans)
+  Output: generated/boxcars-<map>-tables.generated.js
 
   Responsibilities:
   - Validate cities are unique
@@ -26,12 +26,16 @@ function readJson(fp) {
   catch (e) { fail('Failed to read ' + fp + ': ' + e.message); }
 }
 
-const srcPath = path.join(__dirname, '..', 'data', 'gb-payouts.src.json');
-if (!fs.existsSync(srcPath)) fail('Missing input: ' + srcPath + '\nRun: npm run export:gb');
+const which = (process.argv[2] || '').toLowerCase();
+if (which !== 'gb' && which !== 'us') fail('Usage: node tools/build-gb-from-json.js <gb|us>');
+const srcFile = which === 'gb' ? 'gb-payouts.src.json' : 'us-payouts.src.json';
+const srcPath = path.join(__dirname, '..', 'data', srcFile);
+if (!fs.existsSync(srcPath)) fail('Missing input: ' + srcPath + (which==='gb' ? '\nRun: npm run export:gb' : '\nRun: npm run export:us'));
 const src = readJson(srcPath);
 
 const cities = src && Array.isArray(src.cities) ? src.cities : null;
 const payoutsByName = src && src.payoutsByName && typeof src.payoutsByName === 'object' ? src.payoutsByName : null;
+const regionsSrc = src && src.regions && typeof src.regions === 'object' ? src.regions : null;
 if (!cities || !payoutsByName) fail('Invalid source JSON structure.');
 
 // Basic validations
@@ -88,39 +92,84 @@ if (checksEnv) {
 // Generate JS module consumed by the app/tests (same public shape)
 const outDir = path.join(__dirname, '..', 'generated');
 fs.mkdirSync(outDir, { recursive: true });
-const outPath = path.join(outDir, 'boxcars-britain-tables.generated.js');
+const outPath = path.join(outDir, which === 'gb' ? 'boxcars-britain-tables.generated.js' : 'boxcars-us-tables.generated.js');
 
 function jsString(s) { return JSON.stringify(s); }
 
 const banner = `/* AUTO-GENERATED FILE - DO NOT EDIT.
-   Source: data/gb-payouts.src.json
+   Source: data/${srcFile}
    Generated: ${new Date().toISOString()}
 */`;
 
+const payoffName = which === 'gb' ? 'payoffTableGB' : 'payoffTableUS';
+const exportName = which === 'gb' ? 'BOXCARS_GB' : 'BOXCARS_US';
+
+// Prepare regions output if available
+let regionsOut = [];
+let cityIdsByRegionOut = {};
+if (regionsSrc && regionsSrc.destinationCharts) {
+  regionsOut = Object.keys(regionsSrc.destinationCharts);
+  const nameToIndexLocal = new Map(cities.map((n, i) => [n.toLowerCase(), i + 1]));
+  function resolveName(regionName, cityName) {
+    if (!cityName) return null;
+    let key = String(cityName).toLowerCase();
+    if (which === 'us') {
+      if (key === 'portland') {
+        const rn = String(regionName).toLowerCase();
+        key = rn === 'northeast' ? 'portland, me' : 'portland, or';
+      } else if (key === 'cincinnati') {
+        key = 'cincinnatti';
+      }
+    }
+    const id = nameToIndexLocal.get(key);
+    return id || null;
+  }
+  for (const [regionName, chart] of Object.entries(regionsSrc.destinationCharts)) {
+    const ids = new Set();
+    ['odd','even'].forEach((oe) => {
+      const table = chart[oe] || {};
+      Object.values(table).forEach((cityName) => {
+        const id = resolveName(regionName, cityName);
+        if (id) ids.add(id);
+      });
+    });
+    cityIdsByRegionOut[regionName] = Array.from(ids).sort((a,b) => a - b);
+  }
+}
 const js = `${banner}
 (function(){
-  const payoffTableGB = {
+  const ${payoffName} = {
     cities: ${JSON.stringify(cities)},
     matrix: ${JSON.stringify(matrix)}
   };
   if (typeof window !== 'undefined') {
-    window.payoffTableGB = payoffTableGB;
+    window.${payoffName} = ${payoffName};
+  } else if (typeof global !== 'undefined') {
+    global.${payoffName} = ${payoffName};
   }
 
   (function(){
-    const CITIES = payoffTableGB.cities.map((name, idx) => ({ id: idx + 1, name }));
+    const CITIES = ${payoffName}.cities.map((name, idx) => ({ id: idx + 1, name }));
     const NAME_TO_ID = new Map();
     function normalizeName(s) { return String(s).toLowerCase().trim().replace(/[’']/g, "'").replace(/\"\"/g, '"').replace(/\s+/g, ' '); }
     for (const c of CITIES) NAME_TO_ID.set(normalizeName(c.name), c.id);
     function resolveIdByName(name) { if (!name) return null; return NAME_TO_ID.get(normalizeName(name)) || null; }
-    function findPayoutGB(a,b){ if(!a||!b) return undefined; const i=a-1, j=b-1; const m=payoffTableGB.matrix; if(!m||!m[i]||typeof m[i][j]==='undefined') return undefined; return m[i][j]; }
+    function findPayout(a,b){ if(!a||!b) return undefined; const i=a-1, j=b-1; const m=${payoffName}.matrix; if(!m||!m[i]||typeof m[i][j]==='undefined') return undefined; return m[i][j]; }
     if (typeof window !== 'undefined') {
-      window.BOXCARS_GB = {
+      window.${exportName} = {
         CITIES,
-        CITY_IDS_BY_REGION: {},
-        findPayout: findPayoutGB,
+        CITY_IDS_BY_REGION: ${JSON.stringify(cityIdsByRegionOut)},
+        findPayout,
         resolveIdByName,
-        REGIONS: []
+        REGIONS: ${JSON.stringify(regionsOut)}
+      };
+    } else if (typeof global !== 'undefined') {
+      global.${exportName} = {
+        CITIES,
+        CITY_IDS_BY_REGION: ${JSON.stringify(cityIdsByRegionOut)},
+        findPayout,
+        resolveIdByName,
+        REGIONS: ${JSON.stringify(regionsOut)}
       };
     }
   })();

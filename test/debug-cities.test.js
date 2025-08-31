@@ -8,7 +8,11 @@ describe('Debug City Information', () => {
   let boxcarsGB, payoffTableGB;
   
   beforeAll(() => {
-    require(path.join(__dirname, '../boxcars-britain-tables.js'));
+    try {
+      require(path.join(__dirname, '../generated/boxcars-britain-tables.generated.js'));
+    } catch (e) {
+      require(path.join(__dirname, '../boxcars-britain-tables.js'));
+    }
     boxcarsGB = global.BOXCARS_GB;
     payoffTableGB = global.payoffTableGB;
   });

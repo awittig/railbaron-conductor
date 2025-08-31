@@ -33,7 +33,12 @@
     enrichedCities = Array.from(idToCity.values()).sort((a, b) => a.name.localeCompare(b.name));
 
     // Payout resolver and regions list
-    activeFindPayout = useGB ? window.BOXCARS_GB.findPayout : window.findPayout;
+    if (useGB) {
+      activeFindPayout = window.BOXCARS_GB.findPayout;
+    } else {
+      const fp = (typeof window !== 'undefined' && window.findPayout) || (typeof global !== 'undefined' && global.findPayout);
+      activeFindPayout = fp || (() => undefined);
+    }
     activeRegions = useGB ? (window.BOXCARS_GB.REGIONS || []) : (window.BOXCARS.REGIONS || []);
   }
 
@@ -150,6 +155,8 @@
   const colorOptions = ['black','red','blue','green','white','yellow'];
 
   function render() {
+    if (typeof document === 'undefined') return;
+    if (!playersRoot) return;
     // Update header with selected map
     const headerTitle = document.querySelector('header.app-header h1');
     if (headerTitle) {
@@ -785,47 +792,55 @@
 
   // ----- Global controls -----
   function bindGlobalControls() {
-    document.getElementById('btn-add-player').addEventListener('click', () => {
+    const addBtn = document.getElementById('btn-add-player');
+    if (!addBtn) return;
+    addBtn.addEventListener('click', () => {
       state.players.push(defaultPlayer());
       saveState();
       render();
     });
 
-    document.getElementById('btn-new').addEventListener('click', newGame);
+    const newBtn = document.getElementById('btn-new');
+    if (newBtn) newBtn.addEventListener('click', newGame);
 
-    // No runtime map switching during a game
-
-    document.getElementById('btn-export').addEventListener('click', exportJSON);
+    const exportBtn = document.getElementById('btn-export');
+    if (exportBtn) exportBtn.addEventListener('click', exportJSON);
 
     const fileInput = document.getElementById('file-import');
-    fileInput.addEventListener('change', () => {
-      const file = fileInput.files && fileInput.files[0];
-      if (file) importJSON(file);
-      fileInput.value = '';
-    });
+    if (fileInput) {
+      fileInput.addEventListener('change', () => {
+        const file = fileInput.files && fileInput.files[0];
+        if (file) importJSON(file);
+        fileInput.value = '';
+      });
+    }
 
     const statsDialog = document.getElementById('stats-dialog');
     const includeUnreachable = document.getElementById('toggle-include-unreachable');
-    document.getElementById('btn-stats').addEventListener('click', () => {
-      includeUnreachable.checked = false;
-      renderStatsTable(false);
-      statsDialog.showModal();
-    });
-    document.getElementById('btn-close-stats').addEventListener('click', () => statsDialog.close());
-    // Close on backdrop click
-    statsDialog.addEventListener('click', (e) => {
-      const rect = statsDialog.getBoundingClientRect();
-      const inDialog = (
-        e.clientX >= rect.left && e.clientX <= rect.right &&
-        e.clientY >= rect.top && e.clientY <= rect.bottom
-      );
-      if (!inDialog) statsDialog.close();
-    });
-    includeUnreachable.addEventListener('change', () => renderStatsTable(includeUnreachable.checked));
-    document.getElementById('btn-export-csv').addEventListener('click', (e) => {
-      e.preventDefault();
-      exportCSV(includeUnreachable.checked);
-    });
+    const statsBtn = document.getElementById('btn-stats');
+    if (statsDialog && includeUnreachable && statsBtn) {
+      statsBtn.addEventListener('click', () => {
+        includeUnreachable.checked = false;
+        renderStatsTable(false);
+        statsDialog.showModal();
+      });
+      const closeStats = document.getElementById('btn-close-stats');
+      if (closeStats) closeStats.addEventListener('click', () => statsDialog.close());
+      statsDialog.addEventListener('click', (e) => {
+        const rect = statsDialog.getBoundingClientRect();
+        const inDialog = (
+          e.clientX >= rect.left && e.clientX <= rect.right &&
+          e.clientY >= rect.top && e.clientY <= rect.bottom
+        );
+        if (!inDialog) statsDialog.close();
+      });
+      includeUnreachable.addEventListener('change', () => renderStatsTable(includeUnreachable.checked));
+      const exportCsvBtn = document.getElementById('btn-export-csv');
+      if (exportCsvBtn) exportCsvBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        exportCSV(includeUnreachable.checked);
+      });
+    }
   }
 
   // Drag-and-drop reordering
@@ -913,6 +928,11 @@
 
   loadState();
   setupActiveDataset(state.settings.map || 'US');
+  if (typeof global !== 'undefined') {
+    global.railbaronApp = {
+      get activeFindPayout() { return activeFindPayout; },
+    };
+  }
   // If first load (no players) show map select once
   if (!localStorage.getItem(STORAGE_KEY)) {
     showMapDialog(state.settings.map || 'US').then((map) => {
@@ -923,8 +943,11 @@
     });
   }
   ensureDefaultPlayers();
-  bindGlobalControls();
-  render();
+  const hasDOM = (typeof document !== 'undefined') && !!document.getElementById;
+  if (hasDOM) {
+    bindGlobalControls();
+    render();
+  }
 })();
 
 
