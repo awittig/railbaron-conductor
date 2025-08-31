@@ -169,21 +169,13 @@
   }
 
   function movePlayer(index, delta) {
-    const newIndex = index + delta;
-    if (newIndex < 0 || newIndex >= state.players.length) return;
-    const [p] = state.players.splice(index, 1);
-    state.players.splice(newIndex, 0, p);
+    window.RB.state.movePlayer(state, index, delta);
     saveState();
     render();
   }
 
   function deletePlayer(playerId) {
-    const p = state.players.find((x) => x.id === playerId);
-    if (!p) return;
-    if (!confirm(`Delete player "${p.name}" and all their stops?`)) return;
-    state.players = state.players.filter((x) => x.id !== playerId);
-    saveState();
-    render();
+    return window.RB.ui.controllers.deletePlayer(state, saveState, render, playerId);
   }
 
   function colorToken(colorName) {
@@ -397,7 +389,7 @@
   }
 
 
-  function capitalize(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+  // capitalize helper removed (not used)
 
   // ----- Stats -----
   function computeStats(includeUnreachable) {
@@ -463,55 +455,15 @@
 
   // ----- Global controls -----
   function bindGlobalControls() {
-    const addBtn = document.getElementById('btn-add-player');
-    if (!addBtn) return;
-    addBtn.addEventListener('click', () => {
-      state.players.push(defaultPlayer());
-      saveState();
-      render();
+    return window.RB.ui.controllers.bindGlobalControls(document, state, {
+      saveState,
+      render,
+      newGame,
+      exportJSON,
+      importJSON,
+      renderStatsTable,
+      exportCSV,
     });
-
-    const newBtn = document.getElementById('btn-new');
-    if (newBtn) newBtn.addEventListener('click', newGame);
-
-    const exportBtn = document.getElementById('btn-export');
-    if (exportBtn) exportBtn.addEventListener('click', exportJSON);
-
-    const fileInput = document.getElementById('file-import');
-    if (fileInput) {
-      fileInput.addEventListener('change', () => {
-        const file = fileInput.files && fileInput.files[0];
-        if (file) importJSON(file);
-        fileInput.value = '';
-      });
-    }
-
-    const statsDialog = document.getElementById('stats-dialog');
-    const includeUnreachable = document.getElementById('toggle-include-unreachable');
-    const statsBtn = document.getElementById('btn-stats');
-    if (statsDialog && includeUnreachable && statsBtn) {
-      statsBtn.addEventListener('click', () => {
-        includeUnreachable.checked = false;
-        renderStatsTable(false);
-        statsDialog.showModal();
-      });
-      const closeStats = document.getElementById('btn-close-stats');
-      if (closeStats) closeStats.addEventListener('click', () => statsDialog.close());
-      statsDialog.addEventListener('click', (e) => {
-        const rect = statsDialog.getBoundingClientRect();
-        const inDialog = (
-          e.clientX >= rect.left && e.clientX <= rect.right &&
-          e.clientY >= rect.top && e.clientY <= rect.bottom
-        );
-        if (!inDialog) statsDialog.close();
-      });
-      includeUnreachable.addEventListener('change', () => renderStatsTable(includeUnreachable.checked));
-      const exportCsvBtn = document.getElementById('btn-export-csv');
-      if (exportCsvBtn) exportCsvBtn.addEventListener('click', (e) => {
-        e.preventDefault();
-        exportCSV(includeUnreachable.checked);
-      });
-    }
   }
 
   // Drag-and-drop reordering

@@ -1,0 +1,75 @@
+(function (global) {
+  'use strict';
+
+  var root = global || {};
+  var RB = root.RB || (root.RB = {});
+  var ui = RB.ui || (RB.ui = {});
+  var controllers = ui.controllers || (ui.controllers = {});
+
+  function bindGlobalControls(doc, state, actions) {
+    var addBtn = doc.getElementById('btn-add-player');
+    if (!addBtn) return;
+    addBtn.addEventListener('click', function () {
+      state.players.push(RB.models.defaultPlayer());
+      actions.saveState();
+      actions.render();
+    });
+
+    var newBtn = doc.getElementById('btn-new');
+    if (newBtn) newBtn.addEventListener('click', actions.newGame);
+
+    var exportBtn = doc.getElementById('btn-export');
+    if (exportBtn) exportBtn.addEventListener('click', actions.exportJSON);
+
+    var fileInput = doc.getElementById('file-import');
+    if (fileInput) {
+      fileInput.addEventListener('change', function () {
+        var file = fileInput.files && fileInput.files[0];
+        if (file) actions.importJSON(file);
+        fileInput.value = '';
+      });
+    }
+
+    var statsDialog = doc.getElementById('stats-dialog');
+    var includeUnreachable = doc.getElementById('toggle-include-unreachable');
+    var statsBtn = doc.getElementById('btn-stats');
+    if (statsDialog && includeUnreachable && statsBtn) {
+      statsBtn.addEventListener('click', function () {
+        includeUnreachable.checked = false;
+        actions.renderStatsTable(false);
+        statsDialog.showModal();
+      });
+      var closeStats = doc.getElementById('btn-close-stats');
+      if (closeStats) closeStats.addEventListener('click', function () { statsDialog.close(); });
+      statsDialog.addEventListener('click', function (e) {
+        var rect = statsDialog.getBoundingClientRect();
+        var inDialog = (e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.top && e.clientY <= rect.bottom);
+        if (!inDialog) statsDialog.close();
+      });
+      includeUnreachable.addEventListener('change', function () { actions.renderStatsTable(includeUnreachable.checked); });
+      var exportCsvBtn = doc.getElementById('btn-export-csv');
+      if (exportCsvBtn) exportCsvBtn.addEventListener('click', function (e) {
+        e.preventDefault();
+        actions.exportCSV(includeUnreachable.checked);
+      });
+    }
+  }
+
+  function deletePlayer(state, saveState, render, playerId) {
+    var p = state.players.find(function (x) { return x.id === playerId; });
+    if (!p) return;
+    if (!(typeof confirm === 'function' ? confirm('Delete player "' + p.name + '" and all their stops?') : true)) return;
+    state.players = state.players.filter(function (x) { return x.id !== playerId; });
+    saveState();
+    render();
+  }
+
+  controllers.bindGlobalControls = bindGlobalControls;
+  controllers.deletePlayer = deletePlayer;
+
+  if (typeof module !== 'undefined' && module.exports) {
+    module.exports = { bindGlobalControls: bindGlobalControls, deletePlayer: deletePlayer };
+  }
+})(typeof window !== 'undefined' ? window : (typeof global !== 'undefined' ? global : this));
+
+
