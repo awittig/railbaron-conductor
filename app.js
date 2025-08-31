@@ -51,25 +51,9 @@
   /** @type {{ players: Player[], settings: { map: 'US'|'GB' } }} */
   let state = { players: [], settings: { map: 'US' } };
 
-  const RBm = (typeof window !== 'undefined' && window.RB) || (typeof global !== 'undefined' && global.RB) || null;
-  const uuid = (RBm && RBm.models && RBm.models.uuid) || function() {
-    return 'p-' + Math.random().toString(36).slice(2, 9);
-  };
-
-  const defaultStop = (RBm && RBm.models && RBm.models.defaultStop) || function() {
-    return { cityId: null, payoutFromPrev: null, unreachable: false, lastRollText: '' };
-  };
-
-  const defaultPlayer = (RBm && RBm.models && RBm.models.defaultPlayer) || function() {
-    return {
-      id: uuid(),
-      name: 'Player',
-      color: 'black',
-      train: 'Standard',
-      stops: [defaultStop()],
-      collapsed: false,
-    };
-  };
+  const uuid = window.RB.models.uuid;
+  const defaultStop = window.RB.models.defaultStop;
+  const defaultPlayer = window.RB.models.defaultPlayer;
 
   function loadState() {
     try {
@@ -106,12 +90,7 @@
 
   // ----- Payouts and recomputation -----
   function computePayout(prevCityId, currCityId) {
-    const RBs = (typeof window !== 'undefined' && window.RB) || (typeof global !== 'undefined' && global.RB) || null;
-    const coreCompute = RBs && RBs.payouts && RBs.payouts.computePayout;
-    if (typeof coreCompute === 'function') return coreCompute(activeFindPayout, prevCityId, currCityId);
-    if (!prevCityId || !currCityId) return null;
-    const amount = activeFindPayout(prevCityId, currCityId);
-    return typeof amount === 'number' ? amount : null;
+    return window.RB.payouts.computePayout(activeFindPayout, prevCityId, currCityId);
   }
 
   function formatCurrency(amt) {
@@ -122,43 +101,16 @@
   }
 
   function recomputeAllPayouts(player) {
-    const RBs = (typeof window !== 'undefined' && window.RB) || (typeof global !== 'undefined' && global.RB) || null;
-    const recompute = RBs && RBs.payouts && RBs.payouts.recomputeAllPayouts;
-    if (typeof recompute === 'function') {
-      recompute(player, activeFindPayout);
-    } else {
-      const stops = player.stops;
-      for (let i = 0; i < stops.length; i++) {
-        const curr = stops[i];
-        const prev = stops[i + 1];
-        curr.payoutFromPrev = computePayout(prev?.cityId || null, curr.cityId || null);
-      }
-    }
+    window.RB.payouts.recomputeAllPayouts(player, activeFindPayout);
     updateDerivedFields(player);
   }
 
   function getCurrentRegion(player) {
-    const RBs = (typeof window !== 'undefined' && window.RB) || (typeof global !== 'undefined' && global.RB) || null;
-    const getRegion = RBs && RBs.derived && RBs.derived.getCurrentRegion;
-    if (typeof getRegion === 'function') return getRegion(player, idToCity);
-    const latest = player.stops.find((s) => s.cityId);
-    if (!latest) return null;
-    const c = idToCity.get(latest.cityId);
-    return c?.region || null;
+    return window.RB.derived.getCurrentRegion(player, idToCity);
   }
 
   function updateDerivedFields(player) {
-    const RBs = (typeof window !== 'undefined' && window.RB) || (typeof global !== 'undefined' && global.RB) || null;
-    const update = RBs && RBs.derived && RBs.derived.updateDerivedFields;
-    if (typeof update === 'function') return update(player);
-    const visited = player.stops.map((s) => s.cityId).filter(Boolean);
-    player.visitedCityIds = visited;
-    let home = null;
-    for (let i = player.stops.length - 1; i >= 0; i--) {
-      const cid = player.stops[i].cityId;
-      if (cid) { home = cid; break; }
-    }
-    player.homeCityId = home;
+    return window.RB.derived.updateDerivedFields(player);
   }
 
   // ----- Rendering -----
@@ -352,59 +304,14 @@
   }
 
   function renderStopItem(player, stop, stopIdx) {
-    const RBs = (typeof window !== 'undefined' && window.RB) || (typeof global !== 'undefined' && global.RB) || null;
-    const comp = RBs && RBs.ui && RBs.ui.components && RBs.ui.components.stopItem && RBs.ui.components.stopItem.renderStopItem;
-    if (typeof comp === 'function') {
-      return comp(player, stop, stopIdx, {
-        enrichedCities,
-        formatCurrency,
-        recomputeAllPayouts,
-        saveState,
-        render,
-        defaultStop,
-      });
-    }
-    const node = tplStopItem.content.firstElementChild.cloneNode(true);
-    node.dataset.stopIndex = String(stopIdx);
-    node.classList.toggle('unreachable', !!stop.unreachable);
-    const citySelect = node.querySelector('.stop-city');
-    citySelect.innerHTML = '';
-    const blank = document.createElement('option');
-    blank.value = '';
-    blank.textContent = '— Select City —';
-    citySelect.appendChild(blank);
-    for (const c of enrichedCities) {
-      const opt = document.createElement('option');
-      opt.value = String(c.id);
-      opt.textContent = c.name;
-      if (stop.cityId === c.id) opt.selected = true;
-      citySelect.appendChild(opt);
-    }
-    citySelect.addEventListener('change', () => {
-      stop.cityId = citySelect.value ? Number(citySelect.value) : null;
-      recomputeAllPayouts(player);
-      saveState();
-      render();
+    return window.RB.ui.components.stopItem.renderStopItem(player, stop, stopIdx, {
+      enrichedCities,
+      formatCurrency,
+      recomputeAllPayouts,
+      saveState,
+      render,
+      defaultStop,
     });
-    const payoutSpan = node.querySelector('.payout');
-    payoutSpan.textContent = formatCurrency(stop.payoutFromPrev);
-    const unreachableCheckbox = node.querySelector('.stop-unreachable');
-    unreachableCheckbox.checked = !!stop.unreachable;
-    unreachableCheckbox.addEventListener('change', () => {
-      stop.unreachable = unreachableCheckbox.checked;
-      saveState();
-      render();
-    });
-    node.querySelector('.btn-delete-stop').addEventListener('click', () => {
-      if (!confirm('Delete this stop?')) return;
-      player.stops.splice(stopIdx, 1);
-      if (player.stops.length === 0) player.stops.push(defaultStop());
-      recomputeAllPayouts(player);
-      saveState();
-      render();
-    });
-    node.querySelector('.roll-text').textContent = stop.lastRollText || '';
-    return node;
   }
 
   function movePlayer(index, delta) {
@@ -640,98 +547,15 @@
 
   // ----- Stats -----
   function computeStats(includeUnreachable) {
-    const RBs = (typeof window !== 'undefined' && window.RB) || (typeof global !== 'undefined' && global.RB) || null;
-    const coreCompute = RBs && RBs.stats && RBs.stats.computeStats;
-    if (typeof coreCompute === 'function') return coreCompute(state, includeUnreachable);
-    const rows = state.players.map((p) => {
-      const legs = p.stops.filter((s, idx) => {
-        if (idx === p.stops.length - 1) return false; // last has no previous
-        if (s.cityId == null || p.stops[idx + 1].cityId == null) return false;
-        if (!includeUnreachable && s.unreachable) return false;
-        return true;
-      });
-      const totalPayout = legs.reduce((sum, s) => sum + (s.payoutFromPrev || 0), 0);
-      const uniqueCities = new Set(p.stops.map((s) => s.cityId).filter(Boolean)).size;
-      return {
-        playerId: p.id,
-        name: p.name,
-        legsCount: legs.length,
-        totalPayout,
-        uniqueCities,
-      };
-    });
-    const totals = rows.reduce(
-      (acc, r) => {
-        acc.legsCount += r.legsCount;
-        acc.totalPayout += r.totalPayout;
-        acc.uniqueCities += r.uniqueCities; // note: not truly unique across players, shown as sum
-        return acc;
-      },
-      { legsCount: 0, totalPayout: 0, uniqueCities: 0 }
-    );
-    return { rows, totals };
+    return window.RB.stats.computeStats(state, includeUnreachable);
   }
 
   function renderStatsTable(includeUnreachable) {
-    const RBs = (typeof window !== 'undefined' && window.RB) || (typeof global !== 'undefined' && global.RB) || null;
-    const renderStats = RBs && RBs.ui && RBs.ui.stats && RBs.ui.stats.renderStatsTable;
-    if (typeof renderStats === 'function') return renderStats(state, includeUnreachable);
-    const wrap = document.getElementById('stats-table-wrap');
-    const { rows, totals } = computeStats(includeUnreachable);
-    const table = document.createElement('table');
-    table.className = 'stats-table';
-    table.innerHTML = `
-      <thead>
-        <tr>
-          <th>Player</th>
-          <th>Completed legs</th>
-          <th>Total payouts</th>
-          <th>Unique cities</th>
-        </tr>
-      </thead>
-      <tbody>
-        ${rows.map(r => `
-          <tr>
-            <td>${escapeHtml(r.name)}</td>
-            <td>${r.legsCount}</td>
-            <td>${formatCurrency(r.totalPayout)}</td>
-            <td>${r.uniqueCities}</td>
-          </tr>
-        `).join('')}
-      </tbody>
-      <tfoot>
-        <tr>
-          <td>Totals</td>
-          <td>${totals.legsCount}</td>
-          <td>${formatCurrency(totals.totalPayout)}</td>
-          <td>${totals.uniqueCities}</td>
-        </tr>
-      </tfoot>
-    `;
-    wrap.innerHTML = '';
-    wrap.appendChild(table);
+    return window.RB.ui.stats.renderStatsTable(state, includeUnreachable);
   }
 
   function exportCSV(includeUnreachable) {
-    const RBs = (typeof window !== 'undefined' && window.RB) || (typeof global !== 'undefined' && global.RB) || null;
-    const buildCSV = RBs && RBs.stats && RBs.stats.buildCSV;
-    let csv;
-    if (typeof buildCSV === 'function') {
-      csv = buildCSV(state, includeUnreachable);
-    } else {
-      const { rows } = computeStats(includeUnreachable);
-      const header = ['Player','Completed legs','Total payouts','Unique cities'];
-      const lines = [header.join(',')];
-      for (const r of rows) {
-        lines.push([
-          csvEscape(r.name),
-          r.legsCount,
-          r.totalPayout,
-          r.uniqueCities,
-        ].join(','));
-      }
-      csv = lines.join('\n');
-    }
+    const csv = window.RB.stats.buildCSV(state, includeUnreachable);
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -741,21 +565,8 @@
     URL.revokeObjectURL(url);
   }
 
-  const RBns = (typeof window !== 'undefined' && window.RB) || (typeof global !== 'undefined' && global.RB) || null;
-  const csvEscape = (RBns && RBns.format && RBns.format.csvEscape) || function(val) {
-    const s = String(val ?? '');
-    if (/[",\n]/.test(s)) return '"' + s.replace(/"/g, '""') + '"';
-    return s;
-  };
-
-  const escapeHtml = (RBns && RBns.format && RBns.format.escapeHtml) || function(s) {
-    return String(s)
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#039;');
-  };
+  const csvEscape = window.RB.format.csvEscape;
+  const escapeHtml = window.RB.format.escapeHtml;
 
   // ----- Import/Export/New Game -----
   function exportJSON() {
