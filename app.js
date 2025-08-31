@@ -140,167 +140,21 @@
   }
 
   function renderPlayerCard(player, index) {
-    const node = tplPlayerCard.content.firstElementChild.cloneNode(true);
-    node.dataset.playerId = player.id;
-    node.classList.toggle('collapsed', !!player.collapsed);
-    node.classList.toggle('selecting-home-city', !player.stops.some(s => s.cityId));
-    node.style.setProperty('--accent', colorToken(player.color));
-    node.dataset.color = player.color;
-    node.setAttribute('draggable', 'true');
-
-    const nameInput = node.querySelector('.player-name');
-    nameInput.value = player.name;
-    nameInput.addEventListener('input', () => {
-      player.name = nameInput.value;
-      saveState();
+    return window.RB.ui.components.playerCard.renderPlayerCard(player, index, {
+      idToCity,
+      colorToken,
+      saveState,
+      colorOptions,
+      computePayout,
+      formatCurrency,
+      recomputeAllPayouts,
+      render,
+      movePlayer,
+      deletePlayer,
+      defaultStop,
+      rollNextStop,
+      renderStopItem,
     });
-
-    // Inject compact meta row (home city, latest destination)
-    const headerEl = node.querySelector('.player-header');
-    const controlsEl = node.querySelector('.player-controls');
-    const metaRow = document.createElement('div');
-    metaRow.className = 'player-meta-inline';
-    const homeSpan = document.createElement('span');
-    homeSpan.className = 'home-city';
-    const latestSpan = document.createElement('span');
-    latestSpan.className = 'latest-dest';
-    
-    // Check if player has a home city
-    const hasHomeCity = player.stops.some(s => s.cityId);
-    
-    if (!hasHomeCity) {
-      // Player is selecting home city
-      homeSpan.textContent = 'Click "Roll Home City" to start';
-      homeSpan.className = 'home-city selecting';
-      latestSpan.textContent = '';
-    } else {
-      // Player has home city - show normal info
-      // Home city (oldest non-null city is home)
-      const homeId = player.homeCityId || null;
-      const homeName = homeId ? (idToCity.get(homeId)?.name || null) : null;
-      homeSpan.textContent = homeName ? `Home: ${homeName}` : '';
-      // Latest destination (newest non-null city)
-      const latestIdx = player.stops.findIndex((s) => !!s.cityId);
-      const latestStop = latestIdx >= 0 ? player.stops[latestIdx] : null;
-      const latestName = latestStop?.cityId ? (idToCity.get(latestStop.cityId)?.name || null) : null;
-      let payoutSuffix = '';
-      if (latestStop && latestStop.cityId) {
-        const prevId = player.stops[latestIdx + 1]?.cityId || null;
-        const amt = computePayout(prevId, latestStop.cityId);
-        if (amt != null) payoutSuffix = ` · ${formatCurrency(amt)}`;
-      }
-      latestSpan.textContent = latestName ? `Latest: ${latestName}${payoutSuffix}` : '';
-    }
-    metaRow.appendChild(homeSpan);
-    metaRow.appendChild(latestSpan);
-    // Place Home/Latest between the name row and the train bubbles
-    const trainBubbles = node.querySelector('.train-bubbles');
-    if (controlsEl && trainBubbles && controlsEl.contains(trainBubbles)) {
-      controlsEl.insertBefore(metaRow, trainBubbles);
-    } else if (headerEl && controlsEl && headerEl.contains(controlsEl)) {
-      headerEl.insertBefore(metaRow, controlsEl);
-    } else if (headerEl) {
-      headerEl.appendChild(metaRow);
-    }
-
-    // Toolbar: color cycle
-    const colorBtn = node.querySelector('.btn-color');
-    const applyAccent = () => {
-      if (colorBtn) {
-        colorBtn.style.setProperty('--swatch', colorToken(player.color));
-      }
-    };
-    applyAccent();
-    colorBtn.addEventListener('click', () => {
-      const idx = (colorOptions.indexOf(player.color) + 1) % colorOptions.length;
-      player.color = colorOptions[idx];
-      node.style.setProperty('--accent', colorToken(player.color));
-      node.dataset.color = player.color;
-      applyAccent();
-      saveState();
-    });
-
-    // Train bubbles
-    const bubbleGroup = node.querySelector('.train-bubbles');
-    const updateBubbles = () => {
-      bubbleGroup.querySelectorAll('.bubble').forEach((b) => {
-        const val = b.dataset.value;
-        const checked = val === player.train;
-        b.dataset.checked = checked ? 'true' : 'false';
-        const input = b.querySelector('input[type="radio"]');
-        if (input) input.checked = checked;
-      });
-    };
-    bubbleGroup.addEventListener('click', (e) => {
-      const label = e.target.closest('.bubble');
-      if (!label) return;
-      const val = label.dataset.value;
-      if (val && val !== player.train) {
-        player.train = val;
-        saveState();
-        updateBubbles();
-      }
-    });
-    updateBubbles();
-
-    const collapseBtn = node.querySelector('.btn-collapse');
-    if (collapseBtn) {
-      collapseBtn.textContent = player.collapsed ? '+' : '−';
-      collapseBtn.addEventListener('click', () => {
-      player.collapsed = !player.collapsed;
-      saveState();
-      render();
-      });
-    }
-    const upBtn = node.querySelector('.btn-up');
-    if (upBtn) { upBtn.textContent = '◀'; upBtn.addEventListener('click', () => movePlayer(index, -1)); }
-    const downBtn = node.querySelector('.btn-down');
-    if (downBtn) { downBtn.textContent = '▶'; downBtn.addEventListener('click', () => movePlayer(index, +1)); }
-    node.querySelector('.btn-delete').addEventListener('click', () => deletePlayer(player.id));
-
-    // Stops
-    const stopsRoot = node.querySelector('.stop-list');
-    stopsRoot.innerHTML = '';
-    recomputeAllPayouts(player);
-    player.stops.forEach((stop, stopIdx) => {
-      const stopNode = renderStopItem(player, stop, stopIdx);
-      // Apply enter animation for very recent additions
-      if (stop._justAdded) {
-        stopNode.classList.add('enter');
-        requestAnimationFrame(() => {
-          stopNode.classList.add('enter-active');
-          stopNode.classList.remove('enter');
-          setTimeout(() => stopNode.classList.remove('enter-active'), 260);
-        });
-        delete stop._justAdded;
-      }
-      stopsRoot.appendChild(stopNode);
-    });
-
-    // Toolbar: add stop, roll stop
-    const addStopBtn = node.querySelector('.btn-add-stop');
-    const rollStopBtn = node.querySelector('.btn-roll-stop');
-    
-    // Update roll button text based on whether this is home city selection
-    rollStopBtn.textContent = hasHomeCity ? 'Roll Stop' : 'Roll Home City';
-    rollStopBtn.setAttribute('aria-label', hasHomeCity ? 'Roll destination' : 'Roll for home city');
-    rollStopBtn.setAttribute('title', hasHomeCity ? 'Roll destination' : 'Roll for home city');
-    
-    // Disable add stop button until home city is selected
-    addStopBtn.disabled = !hasHomeCity;
-    addStopBtn.title = hasHomeCity ? 'Add stop' : 'Select home city first';
-
-    node.querySelector('.btn-add-stop').addEventListener('click', () => {
-      player.stops.unshift(defaultStop());
-      saveState();
-      render();
-    });
-
-    node.querySelector('.btn-roll-stop').addEventListener('click', () => {
-      rollNextStop(player, node);
-    });
-
-    return node;
   }
 
   function renderStopItem(player, stop, stopIdx) {
