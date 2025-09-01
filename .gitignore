@@ -3,3 +3,7 @@ build/
 .gradle/
 util/
 node_modules/
+
+# Playwright output
+test-results/
+playwright-report/
