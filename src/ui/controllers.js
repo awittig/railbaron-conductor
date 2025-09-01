@@ -53,6 +53,32 @@
         actions.exportCSV(includeUnreachable.checked);
       });
     }
+
+    // Mobile hamburger menu behavior: close after selecting an option
+    // or when interacting anywhere outside the header.
+    var navToggle = doc.getElementById('nav-toggle');
+    var headerEl = doc.querySelector('.app-header');
+    var actionsToolbar = doc.querySelector('.global-actions');
+    if (navToggle && headerEl) {
+      if (actionsToolbar) {
+        // Close when any interactive control inside the menu is activated
+        actionsToolbar.addEventListener('click', function (e) {
+          var interactive = e.target && typeof e.target.closest === 'function' ? e.target.closest('button, a, input, label, select') : null;
+          if (interactive) navToggle.checked = false;
+        });
+        // Also close on changes (e.g., file input selection)
+        actionsToolbar.addEventListener('change', function () { navToggle.checked = false; });
+      }
+
+      // Close on outside interactions
+      doc.addEventListener('pointerdown', function (e) {
+        if (navToggle.checked && !(headerEl.contains(e.target))) navToggle.checked = false;
+      });
+      // Close on Escape for accessibility/keyboard users
+      doc.addEventListener('keydown', function (e) {
+        if (e && (e.key === 'Escape' || e.key === 'Esc') && navToggle.checked) navToggle.checked = false;
+      });
+    }
   }
 
   function deletePlayer(state, saveState, render, playerId) {
