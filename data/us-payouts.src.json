@@ -4693,7 +4693,7 @@
           "6": "Boston",
           "7": "Buffalo",
           "8": "Boston",
-          "9": "Portland",
+          "9": "Portland, ME",
           "10": "New York",
           "11": "New York",
           "12": "New York"
@@ -4815,13 +4815,13 @@
           "3": "Salt Lake City",
           "4": "Salt Lake City",
           "5": "Salt Lake City",
-          "6": "Portland",
-          "7": "Portland",
-          "8": "Portland",
+          "6": "Portland, OR",
+          "7": "Portland, OR",
+          "8": "Portland, OR",
           "9": "Pocatello",
           "10": "Butte",
           "11": "Butte",
-          "12": "Portland"
+          "12": "Portland, OR"
         }
       },
       "Southwest": {
@@ -4855,7 +4855,7 @@
     }
   },
   "meta": {
-    "generatedAt": "2025-08-31T20:37:03.760Z",
+    "generatedAt": "2025-09-01T16:52:48.747Z",
     "source": "payouts.js + boxcars-tables.js",
     "version": 1
   }

@@ -120,7 +120,7 @@ describe('Core Rolling Module', () => {
     });
   });
 
-  describe('Portland disambiguation in rollNextStop', () => {
+  describe('Portland qualified names in rollNextStop', () => {
     let BOXCARS_US;
 
     beforeAll(() => {
@@ -136,13 +136,13 @@ describe('Core Rolling Module', () => {
       BOXCARS_US = global.BOXCARS_US;
     });
 
-    test('should resolve Portland to Portland, OR when rolling in Northwest region', () => {
+    test('should use qualified Portland, OR when rolling in Northwest region', () => {
       if (!BOXCARS_US) {
-        console.warn('BOXCARS_US not available, skipping Portland disambiguation test');
+        console.warn('BOXCARS_US not available, skipping Portland test');
         return;
       }
 
-      // Test that the rolling logic properly handles Portland disambiguation for Northwest
+      // Test that the rolling logic properly handles qualified Portland names for Northwest
       const mockCtx = {
         dataset: BOXCARS_US,
         idToCity: new Map([[1, { id: 1, name: 'Albany', region: 'Northeast' }]]),
@@ -176,17 +176,17 @@ describe('Core Rolling Module', () => {
         
         // Should resolve to Portland, OR (id 50) since we're in Northwest region
         expect(stop.cityId).toBe(50);
-        expect(stop.lastRollText).toContain('Portland');
+        expect(stop.lastRollText).toContain('Portland, OR');
       });
     });
 
-    test('should resolve Portland to Portland, ME when rolling in Northeast region', () => {
+    test('should use qualified Portland, ME when rolling in Northeast region', () => {
       if (!BOXCARS_US) {
-        console.warn('BOXCARS_US not available, skipping Portland disambiguation test');
+        console.warn('BOXCARS_US not available, skipping Portland test');
         return;
       }
 
-      // Test that the rolling logic properly handles Portland disambiguation for Northeast
+      // Test that the rolling logic properly handles qualified Portland names for Northeast
       const mockCtx = {
         dataset: BOXCARS_US,
         idToCity: new Map([[1, { id: 1, name: 'Albany', region: 'Northeast' }]]),
@@ -220,7 +220,7 @@ describe('Core Rolling Module', () => {
         
         // Should resolve to Portland, ME (id 49) since we're in Northeast region
         expect(stop.cityId).toBe(49);
-        expect(stop.lastRollText).toContain('Portland');
+        expect(stop.lastRollText).toContain('Portland, ME');
       });
     });
   });

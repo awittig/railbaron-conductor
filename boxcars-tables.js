@@ -96,7 +96,7 @@
           6: "Boston",
           7: "Buffalo",
           8: "Boston",
-          9: "Portland",
+          9: "Portland, ME",
           10: "New York",
           11: "New York",
           12: "New York"
@@ -218,13 +218,13 @@
           3: "Salt Lake City",
           4: "Salt Lake City",
           5: "Salt Lake City",
-          6: "Portland",
-          7: "Portland",
-          8: "Portland",
+          6: "Portland, OR",
+          7: "Portland, OR",
+          8: "Portland, OR",
           9: "Pocatello",
           10: "Butte",
           11: "Butte",
-          12: "Portland"
+          12: "Portland, OR"
         }
       },
       "Southwest": {
@@ -273,12 +273,6 @@
   function resolveCityIdFromName(regionName, cityName) {
     if (!cityName) return null;
     const key = cityName.toLowerCase();
-
-    // Disambiguate Portland by region
-    if (key === 'portland') {
-      const specific = regionName === 'Northeast' ? 'portland, me' : 'portland, or';
-      return NAME_TO_ID.get(specific) || null;
-    }
 
     // Common alias corrections
     const aliasMap = new Map([

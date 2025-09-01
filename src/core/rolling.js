@@ -60,13 +60,7 @@
       var cname = rchart && rchart[oe2] && rchart[oe2][s2] || null;
       cityName = cname || '—';
       if (cname && ctx.dataset.resolveIdByName) {
-        // Handle Portland disambiguation based on region
-        if (cname.toLowerCase() === 'portland') {
-          var specificPortland = region === 'Northeast' ? 'Portland, ME' : 'Portland, OR';
-          cityId = ctx.dataset.resolveIdByName(specificPortland);
-        } else {
-          cityId = ctx.dataset.resolveIdByName(cname);
-        }
+        cityId = ctx.dataset.resolveIdByName(cname);
       }
     }
     

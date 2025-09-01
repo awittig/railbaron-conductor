@@ -21,7 +21,7 @@ function fail(message) {
 const vm = require('vm');
 
 // Execute payouts.js in isolated context to obtain cities and findPayout
-const payoutsCode = fs.readFileSync(path.join(__dirname, '..', 'payouts.js'), 'utf8');
+const payoutsCode = fs.readFileSync(path.join(__dirname, '..', 'legacy', 'payouts.js'), 'utf8');
 const sandboxPayouts = { console };
 vm.createContext(sandboxPayouts);
 try {
