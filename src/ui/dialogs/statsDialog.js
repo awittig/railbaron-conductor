@@ -21,7 +21,7 @@
           '\n          <tr>\n'
           + '            <td>' + (RB.format && RB.format.escapeHtml ? RB.format.escapeHtml(r.name) : String(r.name)) + '</td>\n'
           + '            <td>' + r.legsCount + '</td>\n'
-          + '            <td>' + ((root.state && root.state.settings && root.state.settings.map === 'GB') ? '£' : '$') + r.totalPayout.toString().replace(/\\B(?=(\\d{3})+(?!\\d))/g, ',') + '</td>\n'
+          + '            <td>' + (RB.format && RB.format.formatCurrency ? RB.format.formatCurrency(r.totalPayout, state && state.settings && state.settings.map) : r.totalPayout) + '</td>\n'
           + '            <td>' + r.uniqueCities + '</td>\n'
           + '          </tr>\n'
         );
@@ -29,7 +29,7 @@
       + '\n      </tbody>\n      <tfoot>\n        <tr>\n'
       + '          <td>Totals</td>\n'
       + '          <td>' + totals.legsCount + '</td>\n'
-      + '          <td>' + ((root.state && root.state.settings && root.state.settings.map === 'GB') ? '£' : '$') + totals.totalPayout.toString().replace(/\\B(?=(\\d{3})+(?!\\d))/g, ',') + '</td>\n'
+      + '          <td>' + (RB.format && RB.format.formatCurrency ? RB.format.formatCurrency(totals.totalPayout, state && state.settings && state.settings.map) : totals.totalPayout) + '</td>\n'
       + '          <td>' + totals.uniqueCities + '</td>\n'
       + '        </tr>\n      </tfoot>\n    '
     );

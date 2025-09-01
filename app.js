@@ -98,10 +98,7 @@
   }
 
   function formatCurrency(amt) {
-    if (amt == null) return '';
-    const isGB = state.settings.map === 'GB';
-    const sym = isGB ? '£' : '$';
-    return sym + amt.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    return window.RB.format.formatCurrency(amt, state.settings.map);
   }
 
   function recomputeAllPayouts(player) {
