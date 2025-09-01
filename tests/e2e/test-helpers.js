@@ -102,9 +102,9 @@ async function waitForAppToLoad(page) {
   // Handle the initial map selection dialog if it appears
   const mapDialog = page.locator('#map-dialog');
   if (await mapDialog.isVisible({ timeout: 1000 })) {
-    // Select US map by default
-    const usRadio = mapDialog.locator('input[value="US"]');
-    await usRadio.click();
+    // Click the US map label instead of the hidden radio button
+    const usLabel = mapDialog.locator('label[data-value="US"]');
+    await usLabel.click();
     
     // Click the confirm button
     const confirmBtn = mapDialog.locator('#btn-map-confirm');
