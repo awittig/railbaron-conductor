@@ -137,6 +137,58 @@ describe('Rail Baron Payout System - Simplified Tests', () => {
       console.log('Function lookup passed:', functionValue === 8);
     });
 
+    test('should calculate Barnstaple to Oban payout correctly', () => {
+      const barnstaple = boxcarsGB.CITIES.find(city => city.name === 'Barnstaple');
+      const oban = boxcarsGB.CITIES.find(city => city.name === 'Oban');
+      
+      expect(barnstaple).toBeDefined();
+      expect(oban).toBeDefined();
+      
+      // Calculate expected matrix indices
+      const barnstapleIndex = barnstaple.id - 1;
+      const obanIndex = oban.id - 1;
+      
+      console.log('=== DEBUG: Barnstaple-Oban Payout Calculation ===');
+      console.log('Barnstaple index:', barnstapleIndex, '(city id:', barnstaple.id, ')');
+      console.log('Oban index:', obanIndex, '(city id:', oban.id, ')');
+      
+      // Check matrix bounds
+      console.log('Matrix dimensions:', {
+        rows: payoffTableGB.matrix.length,
+        cols: payoffTableGB.matrix[0]?.length || 0
+      });
+      
+      // Check if indices are within bounds
+      const rowInBounds = barnstapleIndex >= 0 && barnstapleIndex < payoffTableGB.matrix.length;
+      const colInBounds = obanIndex >= 0 && obanIndex < payoffTableGB.matrix[0]?.length;
+      
+      console.log('Indices in bounds:', {
+        rowInBounds,
+        colInBounds,
+        barnstapleIndex,
+        obanIndex
+      });
+      
+      expect(rowInBounds).toBe(true);
+      expect(colInBounds).toBe(true);
+      
+      // Get the actual matrix value
+      const matrixValue = payoffTableGB.matrix[barnstapleIndex][obanIndex];
+      console.log('Matrix value at [', barnstapleIndex, '][', obanIndex, ']:', matrixValue);
+      
+      // Test the findPayout function
+      const functionValue = boxcarsGB.findPayout(barnstaple.id, oban.id);
+      console.log('findPayout(', barnstaple.id, ',', oban.id, '):', functionValue);
+      
+      // Both should return 32 (this will fail initially with the incorrect value of 20)
+      expect(matrixValue).toBe(32);
+      expect(functionValue).toBe(32);
+      
+      console.log('=== DEBUG: Barnstaple-Oban Test Results ===');
+      console.log('Matrix lookup passed:', matrixValue === 32);
+      console.log('Function lookup passed:', functionValue === 32);
+    });
+
     test('should verify matrix row for Hereford', () => {
       const hereford = boxcarsGB.CITIES.find(city => city.name === 'Hereford');
       const herefordIndex = hereford.id - 1;
