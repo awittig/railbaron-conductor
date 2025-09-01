@@ -63,9 +63,24 @@ test.describe('Rail Baron Game Setup', () => {
     await addPlayerBtn.click();
     await expect(playersContainer.locator('.player-card')).toHaveCount(2);
 
-    // Remove one player
+    // Remove one player (this will trigger a confirmation dialog)
     const removeBtn = playersContainer.locator('.btn-delete').first();
+    
+    await removeBtn.waitFor();
+    await expect(removeBtn).toBeVisible();
+    
+    // Handle the confirmation dialog
+    page.on('dialog', async dialog => {
+      expect(dialog.type()).toBe('confirm');
+      expect(dialog.message()).toContain('Delete player');
+      await dialog.accept();
+    });
+    
     await removeBtn.click();
+    
+    // Give the UI time to update after deletion
+    await page.waitForTimeout(500);
+    
     await expect(playersContainer.locator('.player-card')).toHaveCount(1);
   });
 
