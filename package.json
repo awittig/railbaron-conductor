@@ -7,7 +7,12 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
-    "start": "python -m http.server 8000",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:debug": "playwright test --debug",
+    "test:e2e:headed": "playwright test --headed",
+    "test:all": "npm run test && npm run test:e2e",
+    "start": "python -m http.server 8080",
     "export:gb": "node tools/export-gb-payouts.js",
     "export:us": "node tools/export-us-payouts.js",
     "build:data:gb": "node tools/build-gb-from-json.js gb",
@@ -15,6 +20,7 @@
     "build:data": "npm run build:data:gb && npm run build:data:us"
   },
   "devDependencies": {
+    "@playwright/test": "^1.55.0",
     "jest": "^29.7.0",
     "jest-environment-jsdom": "^29.7.0"
   },
