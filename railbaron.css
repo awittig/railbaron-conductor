@@ -29,17 +29,7 @@ html, body { height: 100%; }
 body {
   margin: 0;
   font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
-  background:
-    radial-gradient(1000px 600px at 20% -10%, rgba(20,184,166,0.22), transparent 60%),
-    radial-gradient(1200px 700px at 110% -20%, rgba(139,92,246,0.18), transparent 60%),
-    radial-gradient(900px 600px at 50% 120%, rgba(244,63,94,0.12), transparent 60%),
-    linear-gradient(135deg,
-      rgba(20,184,166,0.12) 0%,
-      rgba(59,130,246,0.12) 35%,
-      rgba(139,92,246,0.12) 65%,
-      rgba(244,63,94,0.12) 100%
-    ),
-    var(--bg);
+  background: var(--bg);
   color: var(--text);
 }
 
@@ -117,10 +107,16 @@ body {
 
 .player-card {
   background:
-    linear-gradient(180deg,
-      color-mix(in srgb, var(--accent, var(--black)) 18%, var(--panel)) 0%,
-      var(--panel) 65%
-    );
+    radial-gradient(1000px 600px at 20% -10%, rgba(20,184,166,0.15), transparent 60%),
+    radial-gradient(1200px 700px at 110% -20%, rgba(139,92,246,0.12), transparent 60%),
+    radial-gradient(900px 600px at 50% 120%, rgba(244,63,94,0.10), transparent 60%),
+    linear-gradient(135deg,
+      rgba(20,184,166,0.08) 0%,
+      rgba(59,130,246,0.08) 35%,
+      rgba(139,92,246,0.08) 65%,
+      rgba(244,63,94,0.08) 100%
+    ),
+    #3a4553;
   border: 2px solid var(--accent, var(--black));
   border-radius: 14px;
   box-shadow: var(--shadow);
@@ -128,17 +124,29 @@ body {
 }
 .player-card[data-color="white"] {
   background:
-    linear-gradient(180deg,
-      color-mix(in srgb, var(--accent, var(--white)) 12%, var(--panel)) 0%,
-      var(--panel) 65%
-    );
+    radial-gradient(1000px 600px at 20% -10%, rgba(20,184,166,0.15), transparent 60%),
+    radial-gradient(1200px 700px at 110% -20%, rgba(139,92,246,0.12), transparent 60%),
+    radial-gradient(900px 600px at 50% 120%, rgba(244,63,94,0.10), transparent 60%),
+    linear-gradient(135deg,
+      rgba(20,184,166,0.08) 0%,
+      rgba(59,130,246,0.08) 35%,
+      rgba(139,92,246,0.08) 65%,
+      rgba(244,63,94,0.08) 100%
+    ),
+    #3a4553;
 }
 .player-card[data-color="black"] {
   background:
-    linear-gradient(180deg,
-      color-mix(in srgb, var(--accent, var(--black)) 10%, var(--panel)) 0%,
-      var(--panel) 65%
-    );
+    radial-gradient(1000px 600px at 20% -10%, rgba(20,184,166,0.15), transparent 60%),
+    radial-gradient(1200px 700px at 110% -20%, rgba(139,92,246,0.12), transparent 60%),
+    radial-gradient(900px 600px at 50% 120%, rgba(244,63,94,0.10), transparent 60%),
+    linear-gradient(135deg,
+      rgba(20,184,166,0.08) 0%,
+      rgba(59,130,246,0.08) 35%,
+      rgba(139,92,246,0.08) 65%,
+      rgba(244,63,94,0.08) 100%
+    ),
+    #3a4553;
 }
 .player-card[data-color="black"] .player-name { color: #f3f4f6; }
 .player-card[data-color="black"] { border-color: #374151; }
