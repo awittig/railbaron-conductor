@@ -8,11 +8,12 @@ test.describe('Smoke Tests', () => {
     await waitForAppToLoad(page);
     
     // Basic smoke test - just verify the app loads
-    await expect(page).toHaveTitle(/Rail Baron/i);
-    await expect(page.locator('body')).toContainText('Rail Baron');
+    await expect(page).toHaveTitle(/Boxcars Conductor/i);
+    await expect(page.locator('body')).toContainText('Boxcars Conductor');
     
     // Verify main UI elements are present
-    await expect(page.locator('#players-section, .players-section, [class*="player"]')).toBeVisible();
+    await expect(page.locator('#players')).toBeVisible();
+    await expect(page.locator('#btn-add-player')).toBeVisible();
     
     console.log('✅ Application loaded successfully');
   });
@@ -44,16 +45,12 @@ test.describe('Smoke Tests', () => {
     await page.goto('/');
     await waitForAppToLoad(page);
     
+    // waitForAppToLoad already handles the map dialog, no need to handle it again
+    
     // Interact with basic functionality
-    const addPlayerBtn = page.locator('#add-player-btn, button:has-text("Add"), .add-player');
+    const addPlayerBtn = page.locator('#btn-add-player');
     if (await addPlayerBtn.isVisible()) {
       await addPlayerBtn.click();
-    }
-    
-    const mapSelect = page.locator('#map-select, select');
-    if (await mapSelect.isVisible()) {
-      await mapSelect.selectOption('GB');
-      await mapSelect.selectOption('US');
     }
     
     // Check for any JavaScript errors

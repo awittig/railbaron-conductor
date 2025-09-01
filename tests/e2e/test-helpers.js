@@ -11,7 +11,7 @@
  */
 async function setupPlayersForTesting(page, playerNames = ['Test Player']) {
   for (const name of playerNames) {
-    await page.locator('#add-player-btn').click();
+    await page.locator('#btn-add-player').click();
     await page.locator('input[placeholder*="name"]').last().fill(name);
   }
 }
@@ -96,8 +96,24 @@ function parseCurrencyValue(currencyText) {
  * @param {import('@playwright/test').Page} page 
  */
 async function waitForAppToLoad(page) {
-  await page.waitForSelector('#players-section');
-  await page.waitForSelector('#map-controls');
+  await page.waitForSelector('#players');
+  await page.waitForSelector('#btn-add-player');
+  
+  // Handle the initial map selection dialog if it appears
+  const mapDialog = page.locator('#map-dialog');
+  if (await mapDialog.isVisible({ timeout: 1000 })) {
+    // Select US map by default
+    const usRadio = mapDialog.locator('input[value="US"]');
+    await usRadio.click();
+    
+    // Click the confirm button
+    const confirmBtn = mapDialog.locator('#btn-map-confirm');
+    await confirmBtn.click();
+    
+    // Wait for dialog to close
+    await page.waitForSelector('#map-dialog', { state: 'hidden', timeout: 3000 });
+  }
+  
   await page.waitForTimeout(500); // Additional time for any initialization
 }
 
