@@ -242,7 +242,7 @@ describe('Core Stats Module', () => {
           },
           {
             id: 'p2',
-            name: 'Player\nwith newline',
+            name: 'Player with quote"',
             stops: [{ cityId: 1, payoutFromPrev: null, unreachable: false }]
           }
         ]
@@ -252,7 +252,23 @@ describe('Core Stats Module', () => {
       const lines = csv.split('\n');
 
       expect(lines[1]).toBe('"Player, with comma",0,0,1');
-      expect(lines[2]).toBe('"Player\nwith newline",0,0,1');
+      expect(lines[2]).toBe('"Player with quote""",0,0,1');
+    });
+
+    test('should handle names with newlines correctly', () => {
+      const state = {
+        players: [
+          {
+            id: 'p1',
+            name: 'Player\nwith newline',
+            stops: [{ cityId: 1, payoutFromPrev: null, unreachable: false }]
+          }
+        ]
+      };
+
+      const csv = stats.buildCSV(state, false);
+      // For CSV with newlines, we need to check the whole CSV string, not split by lines
+      expect(csv).toBe('Player,Completed legs,Total payouts,Unique cities\n"Player\nwith newline",0,0,1');
     });
 
     test('should handle null and undefined names', () => {

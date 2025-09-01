@@ -78,12 +78,16 @@ describe('Core Rolling Module', () => {
         stops: [{ cityId: null }] // no cities set
       };
 
-      const rollHomeCitySpy = jest.spyOn(rolling, 'rollHomeCity').mockResolvedValue();
+      // Mock the rollHomeCity function to avoid infinite recursion
+      const originalRollHomeCity = rolling.rollHomeCity;
+      rolling.rollHomeCity = jest.fn().mockResolvedValue();
 
       await rolling.rollNextStop(player, mockCtx);
 
-      expect(rollHomeCitySpy).toHaveBeenCalledWith(player, mockCtx);
-      rollHomeCitySpy.mockRestore();
+      expect(rolling.rollHomeCity).toHaveBeenCalledWith(player, mockCtx);
+      
+      // Restore original function
+      rolling.rollHomeCity = originalRollHomeCity;
     });
 
     test('should roll destination for player with home city', async () => {
