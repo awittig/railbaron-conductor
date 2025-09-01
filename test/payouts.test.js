@@ -215,5 +215,27 @@ describe('Rail Baron Payout System', () => {
       expect(matrix[herefordIdx][bangorIdx]).toBe(8);
       expect(matrix[bangorIdx][herefordIdx]).toBe(8);
     });
+
+    test('should calculate correct payout from Southend on Sea to Montrose', () => {
+      const southend = boxcarsBritainTables.CITIES.find(city => city.name === 'Southend-on-Sea');
+      const montrose = boxcarsBritainTables.CITIES.find(city => city.name === 'Montrose');
+      
+      expect(southend).toBeDefined();
+      expect(montrose).toBeDefined();
+      
+      const payout = boxcarsBritainTables.findPayout(southend.id, montrose.id);
+      expect(payout).toBe(27);
+    });
+
+    test('should calculate correct payout from Montrose to Swansea', () => {
+      const montrose = boxcarsBritainTables.CITIES.find(city => city.name === 'Montrose');
+      const swansea = boxcarsBritainTables.CITIES.find(city => city.name === 'Swansea');
+      
+      expect(montrose).toBeDefined();
+      expect(swansea).toBeDefined();
+      
+      const payout = boxcarsBritainTables.findPayout(montrose.id, swansea.id);
+      expect(payout).toBe(27);
+    });
   });
 });
