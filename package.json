@@ -14,7 +14,6 @@
     "test:all": "npm run test && npm run test:e2e",
     "start": "python -m http.server 8080",
     "export:gb": "node tools/export-gb-payouts.js",
-    "export:us": "node tools/export-us-payouts.js",
     "build:data:gb": "node tools/build-gb-from-json.js gb",
     "build:data:us": "node tools/build-gb-from-json.js us",
     "build:data": "npm run build:data:gb && npm run build:data:us"

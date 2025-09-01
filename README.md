@@ -100,13 +100,8 @@ railbaron-conductor/
 │   │   ├── stats.test.js      # Statistics tests
 │   │   └── rolling.test.js    # Rolling logic tests
 │   ├── integration.test.js    # End-to-end integration tests
-│   ├── payouts.test.js        # Legacy payout validation tests
+│   ├── payouts.test.js        # Payout validation tests
 │   └── setup.js               # Test environment configuration
-├── legacy/                    # Archived legacy files
-│   ├── railbaron-app.js       # Legacy AngularJS implementation
-│   ├── railbaron.js           # Legacy jQuery implementation
-│   ├── player.js              # Legacy player constructor
-│   └── payouts.js             # Legacy US payout implementation
 ├── package.json               # Dependencies and scripts
 ├── report.md                  # Code review findings and recommendations
 └── README.md                  # This file
@@ -167,12 +162,12 @@ When adding new functionality:
 - **Performance Verification**: Ensure calculations remain efficient
 - **Data Integrity**: Validate payout matrices and city mappings
 
-### Legacy Code
+### Code Organization
 
-Legacy implementations are preserved in the `legacy/` folder for reference:
-- **Do not modify** legacy files - they are archived for historical purposes
-- **Use `src/` modules** for all new development
+The codebase follows modern modular patterns:
+- **Use `src/` modules** for all development
 - **Prefer generated data** files over hand-maintained tables when available
+- **Keep core logic separate** from UI code for better testability
 
 ### Data Management
 

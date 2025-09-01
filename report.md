@@ -17,12 +17,12 @@
 
 ---
 
-### Unused/legacy code to remove or archive
+### Legacy code cleanup completed
 
-- `railbaron-app.js`: AngularJS 1.x controller, not loaded by `index.html` nor used in tests. Candidate for removal or move to `legacy/`.
-- `railbaron.js`: jQuery-driven UI, not referenced by `index.html` nor tests. Remove or move to `legacy/`.
-- `player.js`: Unused constructor, not imported anywhere. Remove or move to `legacy/`.
-- `payouts.js` (root): Legacy US dataset and `findPayout`. Not used by the browser app (modern app uses `generated/*` via `window.BOXCARS_US`). Some tests still `require('../payouts.js')`; consider removing that `require` and archiving this file to reduce confusion.
+All legacy code has been removed from the repository:
+- Removed `legacy/` directory containing old AngularJS and jQuery implementations
+- Removed unused `export:us` script that depended on legacy code
+- Updated documentation to reflect the cleaned-up codebase
 
 Notes:
 - `boxcars-britain-tables.js` is a non-generated fallback copy; tests and `index.html` prefer generated data. Keep it if you want a human-editable source; otherwise document that only `generated/*` is authoritative.
@@ -80,12 +80,9 @@ Gaps to address:
 - No unit tests for `src/core/derived.js` (`getCurrentRegion`, `updateDerivedFields`).
 - No unit tests for `src/core/stats.js` (`computeStats`, `buildCSV`).
 - No deterministic tests for `src/core/rolling.js` (mock RNG, assert region/city selection paths and UI delegation behavior).
-- Tests unnecessarily `require('../payouts.js')` (legacy) even when generated US data is present. This increases coupling to deprecated code.
-
 Recommendations:
 - Add focused unit tests for `core` functions with small fixtures and mocks. Keep integration tests for end-to-end guarantees.
-- Convert “debug” tests to assertions or mark them as opt-in (e.g., rename with `.debug.test.js` and exclude from default `testMatch`).
-- Remove the `require('../payouts.js')` lines from tests once legacy fallback is archived.
+- Convert "debug" tests to assertions or mark them as opt-in (e.g., rename with `.debug.test.js` and exclude from default `testMatch`).
 
 ---
 
@@ -99,7 +96,7 @@ Recommendations:
 ### Prioritized recommendations
 
 1) High priority
-- Remove or move to `legacy/`: `railbaron-app.js`, `railbaron.js`, `player.js`, and (optionally) `payouts.js` after adjusting tests.
+- ✅ **COMPLETED**: Removed legacy code including old AngularJS and jQuery implementations
 - Fix currency symbol source in `src/ui/dialogs/statsDialog.js` to use the `state` argument.
 - Deduplicate dialog logic: drop inline dialog DOM code in `app.js` and rely on `src/ui/dialogs/*`.
 - Deduplicate `getCurrentRegion` by using `RB.derived.getCurrentRegion` in `rolling.js`.
