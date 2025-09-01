@@ -10,7 +10,6 @@ describe('Rail Baron Integration Tests', () => {
   
   beforeAll(() => {
     // Load all modules in the correct order
-    require(path.join(__dirname, '../payouts.js'));
     require(path.join(__dirname, '../boxcars-tables.js'));
     try {
       require(path.join(__dirname, '../generated/boxcars-britain-tables.generated.js'));

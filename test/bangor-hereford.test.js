@@ -4,7 +4,7 @@ describe('GB payout Bangor -> Hereford', () => {
   let app, boxcarsGB;
 
   beforeAll(() => {
-    require(path.join(__dirname, '../payouts.js'));
+
     require(path.join(__dirname, '../boxcars-tables.js'));
     try { require(path.join(__dirname, '../generated/boxcars-britain-tables.generated.js')); }
     catch (e) { require(path.join(__dirname, '../boxcars-britain-tables.js')); }

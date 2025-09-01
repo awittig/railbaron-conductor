@@ -11,10 +11,7 @@ describe('Rail Baron Payout System', () => {
   
   beforeAll(() => {
     // Load the modules in the correct order
-    // First load the US payouts
-    require(path.join(__dirname, '../payouts.js'));
-    
-    // Then load the US tables
+    // Load the US tables
     require(path.join(__dirname, '../boxcars-tables.js'));
     // Ensure US dataset (generated) is loaded when available
     try {

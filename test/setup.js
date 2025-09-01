@@ -45,7 +45,7 @@ if (!global.fetch) {
 // Load RB core and UI modules so app.js can depend on them directly
 require('../src/core/format.js');
 require('../src/core/models.js');
-require('../src/core/payouts.js');
+// Core modules will be loaded by other requires
 require('../src/core/derived.js');
 require('../src/core/stats.js');
 require('../src/core/rolling.js');
