@@ -1,13 +1,14 @@
 // @ts-check
 const { test, expect } = require('@playwright/test');
+const { waitForAppToLoad, setupPlayersForTesting } = require('./test-helpers');
 
 test.describe('Drag and Drop Functionality', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
+    await waitForAppToLoad(page);
     
     // Set up a player with multiple stops for drag/drop testing
-    await page.locator('#add-player-btn').click();
-    await page.locator('input[placeholder*="name"]').first().fill('Test Player');
+    await setupPlayersForTesting(page, ['Test Player']);
     
     // We'll need some stops to reorder - this might require multiple rolls
     // or manual setup depending on the app's current state
@@ -173,7 +174,7 @@ test.describe('Drag and Drop Functionality', () => {
     const playerCard = page.locator('.player-card').first();
     
     // Add multiple players to test cross-player dragging prevention
-    await page.locator('#add-player-btn').click();
+    await page.locator('#btn-add-player').click();
     await page.locator('input[placeholder*="name"]').last().fill('Second Player');
     
     const allPlayerCards = page.locator('.player-card');

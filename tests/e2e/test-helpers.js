@@ -13,6 +13,7 @@ async function setupPlayersForTesting(page, playerNames = ['Test Player']) {
   for (const name of playerNames) {
     await page.locator('#btn-add-player').click();
     await page.locator('input[placeholder*="name"]').last().fill(name);
+    await page.waitForTimeout(100); // Brief pause between players
   }
 }
 
@@ -92,12 +93,34 @@ function parseCurrencyValue(currencyText) {
 }
 
 /**
- * Wait for the application to fully load
+ * Clear application state to ensure clean test environment
  * @param {import('@playwright/test').Page} page 
  */
-async function waitForAppToLoad(page) {
+async function clearAppState(page) {
+  await page.evaluate(() => {
+    // Clear localStorage to remove any persisted game state
+    window.localStorage.clear();
+  });
+}
+
+/**
+ * Wait for the application to fully load
+ * @param {import('@playwright/test').Page} page 
+ * @param {boolean} clearState - Whether to clear localStorage (default: true)
+ */
+async function waitForAppToLoad(page, clearState = true) {
   await page.waitForSelector('#players');
   await page.waitForSelector('#btn-add-player');
+  
+  if (clearState) {
+    // Clear any previous state after app loads but before proceeding
+    await clearAppState(page);
+    
+    // Reload to apply cleared state
+    await page.reload();
+    await page.waitForSelector('#players');
+    await page.waitForSelector('#btn-add-player');
+  }
   
   // Handle the initial map selection dialog if it appears
   const mapDialog = page.locator('#map-dialog');
@@ -204,6 +227,7 @@ module.exports = {
   switchMap,
   getPlayerCard,
   parseCurrencyValue,
+  clearAppState,
   waitForAppToLoad,
   createTestGameData,
   getPlayerStopCount,

@@ -1,13 +1,14 @@
 // @ts-check
 const { test, expect } = require('@playwright/test');
+const { waitForAppToLoad, setupPlayersForTesting } = require('./test-helpers');
 
 test.describe('Rolling and Destinations', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
+    await waitForAppToLoad(page);
     
     // Set up a player for testing
-    await page.locator('#add-player-btn').click();
-    await page.locator('input[placeholder*="name"]').first().fill('Test Player');
+    await setupPlayersForTesting(page, ['Test Player']);
   });
 
   test('should roll home city for new player', async ({ page }) => {
@@ -116,7 +117,7 @@ test.describe('Rolling and Destinations', () => {
   });
 
   test('should update statistics when destinations are added', async ({ page }) => {
-    const statsBtn = page.locator('button:has-text("Stats"), .stats-btn, #stats-btn');
+    const statsBtn = page.locator('#btn-stats');
     
     // Add some destinations by rolling
     const rollBtn = page.locator('.roll-btn').first();

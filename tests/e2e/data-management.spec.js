@@ -1,13 +1,14 @@
 // @ts-check
 const { test, expect } = require('@playwright/test');
+const { waitForAppToLoad, setupPlayersForTesting } = require('./test-helpers');
 
 test.describe('Data Management', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
-    
+    await waitForAppToLoad(page);
+
     // Set up test data: add a player with some destinations
-    await page.locator('#add-player-btn').click();
-    await page.locator('input[placeholder*="name"]').first().fill('Test Player');
+    await setupPlayersForTesting(page, ['Test Player']);
   });
 
   test('should export game data as JSON', async ({ page }) => {
@@ -161,7 +162,7 @@ test.describe('Data Management', () => {
 
   test('should clear all data when requested', async ({ page }) => {
     // Add multiple players and some data
-    await page.locator('#add-player-btn').click(); // Second player
+    await page.locator('#btn-add-player').click(); // Second player
     await page.locator('input[placeholder*="name"]').last().fill('Second Player');
     
     // Roll some destinations

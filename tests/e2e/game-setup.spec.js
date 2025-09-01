@@ -29,57 +29,65 @@ test.describe('Rail Baron Game Setup', () => {
     const addPlayerBtn = page.locator('#btn-add-player');
     const playersContainer = page.locator('#players');
 
-    // Add first player
-    await addPlayerBtn.click();
+    // App starts with 1 default player
     await expect(playersContainer.locator('.player-card')).toHaveCount(1);
-
+    
     // Add second player
     await addPlayerBtn.click();
     await expect(playersContainer.locator('.player-card')).toHaveCount(2);
 
+    // Add third player  
+    await addPlayerBtn.click();
+    await expect(playersContainer.locator('.player-card')).toHaveCount(3);
+
     // Check that players have name inputs
     const playerNameInputs = playersContainer.locator('input[placeholder*="name"]');
-    await expect(playerNameInputs).toHaveCount(2);
+    await expect(playerNameInputs).toHaveCount(3);
 
-    // Enter player names
-    await playerNameInputs.first().fill('Alice');
-    await playerNameInputs.last().fill('Bob');
+    // Enter player names (first player starts with "Player", change others)
+    await playerNameInputs.nth(1).fill('Alice');
+    await playerNameInputs.nth(2).fill('Bob');
 
     // Verify names are saved
-    await expect(playerNameInputs.first()).toHaveValue('Alice');
-    await expect(playerNameInputs.last()).toHaveValue('Bob');
+    await expect(playerNameInputs.first()).toHaveValue('Player'); // Default name
+    await expect(playerNameInputs.nth(1)).toHaveValue('Alice');
+    await expect(playerNameInputs.nth(2)).toHaveValue('Bob');
   });
 
   test('should remove players', async ({ page }) => {
     const addPlayerBtn = page.locator('#btn-add-player');
     const playersContainer = page.locator('#players');
 
-    // Add two players
-    await addPlayerBtn.click();
+    // App starts with 1 default player, add one more 
+    await expect(playersContainer.locator('.player-card')).toHaveCount(1);
     await addPlayerBtn.click();
     await expect(playersContainer.locator('.player-card')).toHaveCount(2);
 
     // Remove one player
-    const removeBtn = playersContainer.locator('.remove-player-btn').first();
+    const removeBtn = playersContainer.locator('.btn-delete').first();
     await removeBtn.click();
     await expect(playersContainer.locator('.player-card')).toHaveCount(1);
   });
 
   test('should persist game state', async ({ page }) => {
-    // Add a player and set their name
-    await page.locator('#btn-add-player').click();
+    // App starts with 1 default player, modify its name
     const nameInput = page.locator('input[placeholder*="name"]').first();
     await nameInput.fill('Test Player');
 
-    // Note: Map switching through dialog would be more complex to test
-    // For now, just test that player state persists
+    // Add another player
+    await page.locator('#btn-add-player').click();
+    const secondNameInput = page.locator('input[placeholder*="name"]').last();
+    await secondNameInput.fill('Second Player');
+    
+    await expect(page.locator('.player-card')).toHaveCount(2);
 
-    // Reload the page
+    // Reload the page but don't clear localStorage to test persistence
     await page.reload();
-    await waitForAppToLoad(page);
+    await waitForAppToLoad(page, false); // Don't clear state
 
     // Check that state is restored 
     await expect(page.locator('input[placeholder*="name"]').first()).toHaveValue('Test Player');
-    await expect(page.locator('.player-card')).toHaveCount(1);
+    await expect(page.locator('input[placeholder*="name"]').last()).toHaveValue('Second Player');
+    await expect(page.locator('.player-card')).toHaveCount(2);
   });
 });
