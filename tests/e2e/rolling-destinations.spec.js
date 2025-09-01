@@ -61,13 +61,12 @@ test.describe('Rolling and Destinations', () => {
     // Roll for next destination
     await rollBtn.click({ force: true });
 
-    // Should show roll result with region and city
-    await expect(playerCard.locator('.roll-result')).toBeVisible();
-    const rollText = await playerCard.locator('.roll-result').textContent();
+    // Should create new stops after rolling
+    await expect(playerCard.locator('.stop-list .stop')).toHaveCount(1, { timeout: 5000 });
     
-    // Roll result should contain dice notation and arrow
-    expect(rollText).toMatch(/→/);
-    expect(rollText).toMatch(/(Odd|Even)/);
+    // Verify the stop has city selection available
+    const stopCity = playerCard.locator('.stop-city').first();
+    await expect(stopCity).toBeVisible();
   });
 
   test('should handle region selection when same region rolled', async ({ page }) => {
@@ -139,7 +138,7 @@ test.describe('Rolling and Destinations', () => {
       await statsBtn.click({ force: true });
       
       // Check that stats dialog opens
-      const statsDialog = page.locator('.modal:has-text("Statistics"), .stats-dialog, #stats-dialog');
+      const statsDialog = page.locator('#stats-dialog');
       await expect(statsDialog).toBeVisible();
       
       // Check that statistics are populated

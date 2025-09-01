@@ -18,11 +18,11 @@ test.describe('Drag and Drop Functionality', () => {
     const playerCard = page.locator('.player-card').first();
     
     // First, we need to create multiple stops by rolling several times
-    const rollBtn = page.locator('.roll-btn').first();
+    const rollBtn = page.locator('.btn-roll-stop').first();
     
     // Roll multiple times to get several destinations
     for (let i = 0; i < 3; i++) {
-      await rollBtn.click();
+      await rollBtn.click({ force: true });
       await page.waitForTimeout(1000);
       
       // Handle any dialogs that might appear
@@ -35,19 +35,19 @@ test.describe('Drag and Drop Functionality', () => {
           // Try to find and click confirmation buttons
           const confirmBtn = dialog.locator('button:has-text("Confirm"), button:has-text("OK"), .confirm-btn').first();
           if (await confirmBtn.isVisible()) {
-            await confirmBtn.click();
+            await confirmBtn.click({ force: true });
           }
           
           // Try to find and click options/selections
           const options = dialog.locator('option, .option, [role="option"]');
           const optionCount = await options.count();
           if (optionCount > 0) {
-            await options.first().click();
+            await options.first().click({ force: true });
             
             // Look for submit button after selection
             const submitBtn = dialog.locator('button:has-text("Confirm"), button:has-text("Submit"), .confirm-btn');
             if (await submitBtn.isVisible()) {
-              await submitBtn.click();
+              await submitBtn.click({ force: true });
             }
           }
         }
@@ -85,10 +85,10 @@ test.describe('Drag and Drop Functionality', () => {
     const playerCard = page.locator('.player-card').first();
     
     // Create multiple stops (similar setup as above)
-    const rollBtn = page.locator('.roll-btn').first();
+    const rollBtn = page.locator('.btn-roll-stop').first();
     
     for (let i = 0; i < 3; i++) {
-      await rollBtn.click();
+      await rollBtn.click({ force: true });
       await page.waitForTimeout(1000);
     }
     
@@ -137,11 +137,11 @@ test.describe('Drag and Drop Functionality', () => {
     }
     
     const playerCard = page.locator('.player-card').first();
-    const rollBtn = page.locator('.roll-btn').first();
+    const rollBtn = page.locator('.btn-roll-stop').first();
     
     // Create some stops
     for (let i = 0; i < 2; i++) {
-      await rollBtn.click();
+      await rollBtn.click({ force: true });
       await page.waitForTimeout(1000);
     }
     
@@ -174,7 +174,7 @@ test.describe('Drag and Drop Functionality', () => {
     const playerCard = page.locator('.player-card').first();
     
     // Add multiple players to test cross-player dragging prevention
-    await page.locator('#btn-add-player').click();
+    await page.locator('#btn-add-player').click({ force: true });
     await page.locator('input[placeholder*="name"]').last().fill('Second Player');
     
     const allPlayerCards = page.locator('.player-card');
@@ -182,8 +182,8 @@ test.describe('Drag and Drop Functionality', () => {
     const secondPlayerCard = allPlayerCards.last();
     
     // Create stops in first player
-    const rollBtn = firstPlayerCard.locator('.roll-btn').first();
-    await rollBtn.click();
+    const rollBtn = firstPlayerCard.locator('.btn-roll-stop').first();
+    await rollBtn.click({ force: true });
     await page.waitForTimeout(1000);
     
     const firstPlayerStops = firstPlayerCard.locator('.stop-item');

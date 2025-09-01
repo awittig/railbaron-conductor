@@ -55,7 +55,7 @@ async function handleModalDialogs(page) {
  * @param {number} playerIndex - Which player to roll for (0-based)
  */
 async function rollDiceForPlayer(page, playerIndex = 0) {
-  const rollBtn = page.locator('.roll-btn').nth(playerIndex);
+  const rollBtn = page.locator('.btn-roll-stop').nth(playerIndex);
   await rollBtn.click();
   await page.waitForTimeout(500);
   await handleModalDialogs(page);
