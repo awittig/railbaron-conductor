@@ -119,4 +119,109 @@ describe('Core Rolling Module', () => {
       expect(region).toBeUndefined();
     });
   });
+
+  describe('Portland disambiguation in rollNextStop', () => {
+    let BOXCARS_US;
+
+    beforeAll(() => {
+      // Load the US tables for testing
+      require(path.join(__dirname, '../../boxcars-tables.js'));
+      try {
+        require(path.join(__dirname, '../../generated/boxcars-us-tables.generated.js'));
+      } catch (e) {
+        try { 
+          require(path.join(__dirname, '../../boxcars-us-tables.js')); 
+        } catch (_) {}
+      }
+      BOXCARS_US = global.BOXCARS_US;
+    });
+
+    test('should resolve Portland to Portland, OR when rolling in Northwest region', () => {
+      if (!BOXCARS_US) {
+        console.warn('BOXCARS_US not available, skipping Portland disambiguation test');
+        return;
+      }
+
+      // Test that the rolling logic properly handles Portland disambiguation for Northwest
+      const mockCtx = {
+        dataset: BOXCARS_US,
+        idToCity: new Map([[1, { id: 1, name: 'Albany', region: 'Northeast' }]]),
+        defaultStop: () => ({ cityId: null, payoutFromPrev: null, unreachable: false, lastRollText: '' }),
+        recomputeAllPayouts: () => {},
+        saveState: () => {},
+        render: () => {},
+        chooseRegion: (defaultRegion) => Promise.resolve(defaultRegion)
+      };
+
+      // Player with a home city so it doesn't call rollHomeCity
+      const player = { 
+        stops: [{ cityId: 1, payoutFromPrev: null, unreachable: false, lastRollText: 'Home' }] 
+      };
+      
+      // Mock rolling to produce Northwest + Portland
+      let rollCount = 0;
+      mockCtx.rngOddEven = () => {
+        rollCount++;
+        return rollCount === 1 ? 'even' : 'even'; // even for region, even for city
+      };
+      mockCtx.rng2d6 = () => {
+        return rollCount === 1 ? 10 : 6; // 10 for Northwest region, 6 for Portland city
+      };
+
+      // Execute the rolling
+      return rolling.rollNextStop(player, mockCtx).then(() => {
+        // Check that the stop was created with the correct city ID
+        expect(player.stops.length).toBe(2); // Home + new stop
+        const stop = player.stops[0]; // New stop is inserted at beginning
+        
+        // Should resolve to Portland, OR (id 50) since we're in Northwest region
+        expect(stop.cityId).toBe(50);
+        expect(stop.lastRollText).toContain('Portland');
+      });
+    });
+
+    test('should resolve Portland to Portland, ME when rolling in Northeast region', () => {
+      if (!BOXCARS_US) {
+        console.warn('BOXCARS_US not available, skipping Portland disambiguation test');
+        return;
+      }
+
+      // Test that the rolling logic properly handles Portland disambiguation for Northeast
+      const mockCtx = {
+        dataset: BOXCARS_US,
+        idToCity: new Map([[1, { id: 1, name: 'Albany', region: 'Northeast' }]]),
+        defaultStop: () => ({ cityId: null, payoutFromPrev: null, unreachable: false, lastRollText: '' }),
+        recomputeAllPayouts: () => {},
+        saveState: () => {},
+        render: () => {},
+        chooseRegion: (defaultRegion) => Promise.resolve(defaultRegion)
+      };
+
+      // Player with a home city so it doesn't call rollHomeCity
+      const player = { 
+        stops: [{ cityId: 1, payoutFromPrev: null, unreachable: false, lastRollText: 'Home' }] 
+      };
+      
+      // Mock rolling to produce Northeast + Portland  
+      let rollCount = 0;
+      mockCtx.rngOddEven = () => {
+        rollCount++;
+        return rollCount === 1 ? 'odd' : 'odd'; // odd for region, odd for city
+      };
+      mockCtx.rng2d6 = () => {
+        return rollCount === 1 ? 9 : 9; // 9 for Northeast region, 9 for Portland city
+      };
+
+      // Execute the rolling
+      return rolling.rollNextStop(player, mockCtx).then(() => {
+        // Check that the stop was created with the correct city ID
+        expect(player.stops.length).toBe(2); // Home + new stop
+        const stop = player.stops[0]; // New stop is inserted at beginning
+        
+        // Should resolve to Portland, ME (id 49) since we're in Northeast region
+        expect(stop.cityId).toBe(49);
+        expect(stop.lastRollText).toContain('Portland');
+      });
+    });
+  });
 });
