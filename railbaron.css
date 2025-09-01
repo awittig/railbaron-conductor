@@ -107,14 +107,14 @@ body {
 
 .player-card {
   background:
-    radial-gradient(1000px 600px at 20% -10%, rgba(20,184,166,0.15), transparent 60%),
-    radial-gradient(1200px 700px at 110% -20%, rgba(139,92,246,0.12), transparent 60%),
-    radial-gradient(900px 600px at 50% 120%, rgba(244,63,94,0.10), transparent 60%),
+    radial-gradient(800px 500px at 20% -10%, rgba(20,184,166,0.25), transparent 60%),
+    radial-gradient(900px 600px at 110% -20%, rgba(139,92,246,0.20), transparent 60%),
+    radial-gradient(700px 400px at 50% 120%, rgba(244,63,94,0.15), transparent 60%),
     linear-gradient(135deg,
-      rgba(20,184,166,0.08) 0%,
-      rgba(59,130,246,0.08) 35%,
-      rgba(139,92,246,0.08) 65%,
-      rgba(244,63,94,0.08) 100%
+      rgba(20,184,166,0.18) 0%,
+      rgba(59,130,246,0.15) 35%,
+      rgba(139,92,246,0.15) 65%,
+      rgba(244,63,94,0.12) 100%
     ),
     #3a4553;
   border: 2px solid var(--accent, var(--black));
@@ -122,29 +122,81 @@ body {
   box-shadow: var(--shadow);
   overflow: hidden;
 }
+.player-card[data-color="red"] {
+  background:
+    radial-gradient(800px 500px at 20% -10%, rgba(239,68,68,0.25), transparent 60%),
+    radial-gradient(900px 600px at 110% -20%, rgba(244,63,94,0.20), transparent 60%),
+    radial-gradient(700px 400px at 50% 120%, rgba(251,146,60,0.15), transparent 60%),
+    linear-gradient(135deg,
+      rgba(239,68,68,0.18) 0%,
+      rgba(244,63,94,0.15) 35%,
+      rgba(251,146,60,0.15) 65%,
+      rgba(245,158,11,0.12) 100%
+    ),
+    #3a4553;
+}
+.player-card[data-color="blue"] {
+  background:
+    radial-gradient(800px 500px at 20% -10%, rgba(59,130,246,0.25), transparent 60%),
+    radial-gradient(900px 600px at 110% -20%, rgba(6,182,212,0.20), transparent 60%),
+    radial-gradient(700px 400px at 50% 120%, rgba(139,92,246,0.15), transparent 60%),
+    linear-gradient(135deg,
+      rgba(59,130,246,0.18) 0%,
+      rgba(6,182,212,0.15) 35%,
+      rgba(139,92,246,0.15) 65%,
+      rgba(20,184,166,0.12) 100%
+    ),
+    #3a4553;
+}
+.player-card[data-color="green"] {
+  background:
+    radial-gradient(800px 500px at 20% -10%, rgba(34,197,94,0.25), transparent 60%),
+    radial-gradient(900px 600px at 110% -20%, rgba(132,204,22,0.20), transparent 60%),
+    radial-gradient(700px 400px at 50% 120%, rgba(20,184,166,0.15), transparent 60%),
+    linear-gradient(135deg,
+      rgba(34,197,94,0.18) 0%,
+      rgba(132,204,22,0.15) 35%,
+      rgba(20,184,166,0.15) 65%,
+      rgba(6,182,212,0.12) 100%
+    ),
+    #3a4553;
+}
 .player-card[data-color="white"] {
   background:
-    radial-gradient(1000px 600px at 20% -10%, rgba(20,184,166,0.15), transparent 60%),
-    radial-gradient(1200px 700px at 110% -20%, rgba(139,92,246,0.12), transparent 60%),
-    radial-gradient(900px 600px at 50% 120%, rgba(244,63,94,0.10), transparent 60%),
+    radial-gradient(800px 500px at 20% -10%, rgba(229,231,235,0.25), transparent 60%),
+    radial-gradient(900px 600px at 110% -20%, rgba(6,182,212,0.20), transparent 60%),
+    radial-gradient(700px 400px at 50% 120%, rgba(59,130,246,0.15), transparent 60%),
     linear-gradient(135deg,
-      rgba(20,184,166,0.08) 0%,
-      rgba(59,130,246,0.08) 35%,
-      rgba(139,92,246,0.08) 65%,
-      rgba(244,63,94,0.08) 100%
+      rgba(229,231,235,0.18) 0%,
+      rgba(6,182,212,0.15) 35%,
+      rgba(59,130,246,0.15) 65%,
+      rgba(139,92,246,0.12) 100%
     ),
     #3a4553;
 }
 .player-card[data-color="black"] {
   background:
-    radial-gradient(1000px 600px at 20% -10%, rgba(20,184,166,0.15), transparent 60%),
-    radial-gradient(1200px 700px at 110% -20%, rgba(139,92,246,0.12), transparent 60%),
-    radial-gradient(900px 600px at 50% 120%, rgba(244,63,94,0.10), transparent 60%),
+    radial-gradient(800px 500px at 20% -10%, rgba(17,24,39,0.25), transparent 60%),
+    radial-gradient(900px 600px at 110% -20%, rgba(168,85,247,0.20), transparent 60%),
+    radial-gradient(700px 400px at 50% 120%, rgba(139,92,246,0.15), transparent 60%),
     linear-gradient(135deg,
-      rgba(20,184,166,0.08) 0%,
-      rgba(59,130,246,0.08) 35%,
-      rgba(139,92,246,0.08) 65%,
-      rgba(244,63,94,0.08) 100%
+      rgba(17,24,39,0.18) 0%,
+      rgba(168,85,247,0.15) 35%,
+      rgba(139,92,246,0.15) 65%,
+      rgba(244,63,94,0.12) 100%
+    ),
+    #3a4553;
+}
+.player-card[data-color="yellow"] {
+  background:
+    radial-gradient(800px 500px at 20% -10%, rgba(234,179,8,0.25), transparent 60%),
+    radial-gradient(900px 600px at 110% -20%, rgba(245,158,11,0.20), transparent 60%),
+    radial-gradient(700px 400px at 50% 120%, rgba(251,146,60,0.15), transparent 60%),
+    linear-gradient(135deg,
+      rgba(234,179,8,0.18) 0%,
+      rgba(245,158,11,0.15) 35%,
+      rgba(251,146,60,0.15) 65%,
+      rgba(132,204,22,0.12) 100%
     ),
     #3a4553;
 }
