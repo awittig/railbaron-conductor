@@ -44,7 +44,7 @@
       region = table && table[s1];
     }
     
-    var currentRegion = getCurrentRegion(player, ctx.idToCity);
+    var currentRegion = RB.derived.getCurrentRegion(player, ctx.idToCity);
     if (currentRegion && region === currentRegion) {
       region = await ctx.chooseRegion(region);
     }
@@ -105,12 +105,7 @@
     }
   }
 
-  function getCurrentRegion(player, idToCity) {
-    var latest = (player.stops || []).find(function (s) { return !!s.cityId; });
-    if (!latest) return null;
-    var c = idToCity && idToCity.get(latest.cityId);
-    return (c && c.region) || null;
-  }
+
 
   rolling.rollNextStop = rollNextStop;
   rolling.rollHomeCity = rollHomeCity;
