@@ -9,6 +9,37 @@
   function bindGlobalControls(doc, state, actions) {
     var addBtn = doc.getElementById('btn-add-player');
     if (!addBtn) return;
+    
+    // Mobile menu handling
+    var navToggle = doc.getElementById('nav-toggle');
+    var globalActions = doc.querySelector('.global-actions');
+    
+    // Close menu when any menu item is clicked
+    if (navToggle && globalActions) {
+      var menuButtons = globalActions.querySelectorAll('.btn, .file-btn');
+      menuButtons.forEach(function(button) {
+        button.addEventListener('click', function() {
+          navToggle.checked = false;
+        });
+      });
+      
+      // Close menu when clicking outside
+      doc.addEventListener('click', function(e) {
+        if (!navToggle.checked) return;
+        
+        var hamburger = doc.querySelector('.hamburger');
+        var clickedInsideMenu = globalActions.contains(e.target);
+        var clickedHamburger = hamburger && hamburger.contains(e.target);
+        
+        // Also check if clicked on the nav-toggle input itself
+        var clickedToggle = e.target === navToggle;
+        
+        if (!clickedInsideMenu && !clickedHamburger && !clickedToggle) {
+          navToggle.checked = false;
+        }
+      });
+    }
+    
     addBtn.addEventListener('click', function () {
       state.players.push(RB.models.defaultPlayer());
       actions.saveState();
